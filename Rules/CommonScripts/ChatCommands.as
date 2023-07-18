@@ -22,39 +22,11 @@ const string[] blacklistedItems = {
 void onInit(CRules@ this)
 {
 	this.addCommandID("SendChatMessage");
+	this.addCommandID("teleport");
 }
 
 bool onServerProcessChat(CRules@ this, const string& in text_in, string& out text_out, CPlayer@ player)
 {
-	//--------MAKING CUSTOM COMMANDS-------//
-	// Making commands is easy - Here's a template:
-	//
-	// if (text_in == "!YourCommand")
-	// {
-	//	// what the command actually does here
-	// }
-	//
-	// Switch out the "!YourCommand" with
-	// your command's name (i.e., !cool)
-	//
-	// Then decide what you want to have
-	// the command do
-	//
-	// Here are a few bits of code you can put in there
-	// to make your command do something:
-	//
-	// blob.server_Hit(blob, blob.getPosition(), Vec2f(0, 0), 10.0f, 0);
-	// Deals 10 damage to the player that used that command (20 hearts)
-	//
-	// CBlob@ b = server_CreateBlob('mat_wood', -1, pos);
-	// insert your blob/the thing you want to spawn at 'mat_wood'
-	//
-	// player.server_setCoins(player.getCoins() + 100);
-	// Adds 100 coins to the player's coins
-	//-----------------END-----------------//
-
-	// cannot do commands while dead
-
 	if (player is null)
 		return true;
 
@@ -73,7 +45,7 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 	string errorMessage = ""; // so errors can be printed out of wasCommandSuccessful is false
 	SColor errorColor = SColor(255,255,0,0); // ^
 
-	if (!isMod && this.hasScript("Sandbox_Rules.as") || chatCommandCooldown) // chat command cooldown timer
+	if (!isMod && this.hasScript("Survival_Rules.as") || chatCommandCooldown) // chat command cooldown timer
 	{
 		uint lastChatTime = 0;
 		if (blob.exists("chat_last_sent"))
@@ -281,6 +253,12 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 						server_MakeCrate(item, description, frame, -1, Vec2f(pos.x, pos.y));
 					}
 				}
+				else if (tokens[0]=="!time") 
+				{
+					if (tokens.length != 2) return false;
+					getMap().SetDayTime(parseFloat(tokens[1]));
+					return false;
+				}
 				// eg. !team 2
 				else if (tokens[0] == "!team")
 				{
@@ -298,10 +276,77 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 					}
 					server_MakePredefinedScroll(pos, s);
 				}
-				else if(tokens[0] == "!coins")
+				else if (tokens[0] == "!coins")
 				{
 					int money = parseInt(tokens[1]);
 					player.server_setCoins(money);
+				}
+				else if (tokens[0]=="!class")
+				{
+					if (tokens.length!=2) return false;
+					CBlob@ newBlob = server_CreateBlob(tokens[1],blob.getTeamNum(),blob.getPosition());
+					if (newBlob !is null)
+					{
+						CInventory@ inv = blob.getInventory();
+						if (inv !is null)
+						{
+							blob.MoveInventoryTo(newBlob);
+						}
+						newBlob.server_SetPlayer(player);
+						blob.server_Die();
+					}
+				}
+				else if (tokens[0]=="!leavebody")
+				{
+					if (tokens.length!=2) return false;
+					CBlob@ newBlob = server_CreateBlob(tokens[1],blob.getTeamNum(),blob.getPosition());
+					if (newBlob !is null)
+					{
+						CInventory@ inv = blob.getInventory();
+						if (inv !is null)
+						{
+							blob.MoveInventoryTo(newBlob);
+						}
+						newBlob.server_SetPlayer(player);
+						//blob.server_Die();
+					}
+				}
+				else if ((tokens[0]=="!tp"))
+				{
+					if (tokens.length != 2) return false;
+
+					CPlayer@ tpPlayer =	GetPlayer(tokens[1]);
+					CBlob@ tpBlob =	tokens.length == 2 ? blob : tpPlayer !is null ? tpPlayer.getBlob() : blob;
+					CPlayer@ tpDest = GetPlayer(tokens.length == 2 ? tokens[1] : tokens[2]);
+
+					if (tpBlob !is null && tpDest !is null)
+					{
+						CBlob@ destBlob = tpDest.getBlob();
+						if (destBlob !is null)
+						{
+							CBitStream params;
+							params.write_u16(tpBlob.getNetworkID());
+							params.write_u16(destBlob.getNetworkID());
+							this.SendCommand(this.getCommandID("teleport"), params);
+						}
+					}
+					return false;
+				}
+				else if (tokens[0]=="!tphere")
+				{
+					if (tokens.length!=2) return false;
+					CPlayer@ tpPlayer=		GetPlayer(tokens[1]);
+					if (tpPlayer !is null)
+					{
+						CBlob@ tpBlob = tpPlayer.getBlob();
+						if (tpBlob !is null)
+						{
+							CBitStream params;
+							params.write_u16(tpBlob.getNetworkID());
+							params.write_u16(blob.getNetworkID());
+							getRules().SendCommand(this.getCommandID("teleport"),params);
+						}
+					}
 				}
 			}
 			else
@@ -381,12 +426,39 @@ bool onClientProcessChat(CRules@ this, const string& in text_in, string& out tex
 	return true;
 }
 
-void onCommand(CRules@ this, u8 cmd, CBitStream @para)
+void onCommand(CRules@ this, u8 cmd, CBitStream @params)
 {
-	if (cmd == this.getCommandID("SendChatMessage"))
+	if (cmd == this.getCommandID("teleport"))
 	{
-		string errorMessage = para.read_string();
-		SColor col = SColor(para.read_u8(), para.read_u8(), para.read_u8(), para.read_u8());
+		u16 tpBlobId, destBlobId;
+
+		if (!params.saferead_u16(tpBlobId)) return;
+		if (!params.saferead_u16(destBlobId)) return;
+
+		CBlob@ tpBlob =	getBlobByNetworkID(tpBlobId);
+		CBlob@ destBlob = getBlobByNetworkID(destBlobId);
+
+		if (tpBlob !is null && destBlob !is null)
+		{
+			if (isClient())
+			{
+				ShakeScreen(64,32,tpBlob.getPosition());
+				ParticleZombieLightning(tpBlob.getPosition());
+			}
+
+			tpBlob.setPosition(destBlob.getPosition());
+
+			if (isClient())
+			{
+				ShakeScreen(64,32,destBlob.getPosition());
+				ParticleZombieLightning(destBlob.getPosition());
+			}
+		}
+	}
+	else if (cmd == this.getCommandID("SendChatMessage"))
+	{
+		string errorMessage = params.read_string();
+		SColor col = SColor(params.read_u8(), params.read_u8(), params.read_u8(), params.read_u8());
 		client_AddToChat(errorMessage, col);
 	}
 }
@@ -394,4 +466,17 @@ void onCommand(CRules@ this, u8 cmd, CBitStream @para)
 bool isBlacklisted(string name)
 {
 	return blacklistedItems.find(name) != -1;
+}
+
+CPlayer@ GetPlayer(string username)
+{
+	username=			username.toLower();
+	int playersAmount=	getPlayerCount();
+	for (int i=0;i<playersAmount;i++)
+	{
+		CPlayer@ player=getPlayer(i);
+		string playerName = player.getUsername().toLower();
+		if (playerName==username || (username.size()>=3 && playerName.findFirst(username,0)==0)) return player;
+	}
+	return null;
 }

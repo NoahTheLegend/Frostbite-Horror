@@ -1,12 +1,10 @@
-// Builder logic
-
-#include "BuilderCommon.as";
+#include "HumanCommon.as";
 #include "PlacementCommon.as";
 #include "Help.as";
 #include "HumanRecipes.as";
 #include "KnockedCommon.as";
 
-namespace Builder
+namespace Human
 {
 	enum Cmd
 	{
@@ -52,7 +50,7 @@ void onInit(CInventory@ this)
 	if (!blob.exists(blocks_property))
 	{
 		BuildBlock[][] blocks;
-		addCommonBuilderBlocks(blocks, blob.getTeamNum());
+		addCommonHumanBlocks(blocks, blob.getTeamNum());
 		blob.set(blocks_property, blocks);
 	}
 
@@ -61,11 +59,11 @@ void onInit(CInventory@ this)
 		blob.set_Vec2f(inventory_offset, Vec2f(0, 174));
 	}
 
-	AddIconToken("$BUILDER_CLEAR$", "BuilderIcons.png", Vec2f(32, 32), 2);
+	AddIconToken("$HUMAN_CLEAR$", "HumanIcons.png", Vec2f(32, 32), 2);
 
-	for(u8 i = 0; i < Builder::PAGE_COUNT; i++)
+	for(u8 i = 0; i < Human::PAGE_COUNT; i++)
 	{
-		AddIconToken("$"+PAGE_NAME[i]+"$", "BuilderPageIcons.png", Vec2f(48, 24), i);
+		AddIconToken("$"+PAGE_NAME[i]+"$", "HumanPageIcons.png", Vec2f(48, 24), i);
 	}
 
 	blob.set_Vec2f("backpack position", Vec2f_zero);
@@ -110,7 +108,7 @@ void MakeBlocksMenu(CInventory@ this, const Vec2f &in INVENTORY_CE)
 			BuildBlock@ b = blocks[PAGE][i];
 			if (b is null) continue;
 			string block_desc = getTranslatedString(b.description);
-			CGridButton@ button = menu.AddButton(b.icon, "\n" + block_desc, Builder::make_block + i);
+			CGridButton@ button = menu.AddButton(b.icon, "\n" + block_desc, Human::make_block + i);
 			if (button is null) continue;
 
 			button.selectOneOnClick = true;
@@ -147,16 +145,16 @@ void MakeBlocksMenu(CInventory@ this, const Vec2f &in INVENTORY_CE)
 			CBitStream params;
 			params.write_u16(blob.getNetworkID());
 
-			CGridButton@ clear = tool.AddButton("$BUILDER_CLEAR$", "", Builder::TOOL_CLEAR, Vec2f(1, 1), params);
+			CGridButton@ clear = tool.AddButton("$HUMAN_CLEAR$", "", Human::TOOL_CLEAR, Vec2f(1, 1), params);
 			if (clear !is null)
 			{
 				clear.SetHoverText(getTranslatedString("Stop building\n"));
 			}
 		}
 
-		const Vec2f INDEX_POS = Vec2f(menu.getLowerRightPosition().x + GRID_PADDING + GRID_SIZE, menu.getUpperLeftPosition().y + GRID_SIZE * Builder::PAGE_COUNT / 2);
+		const Vec2f INDEX_POS = Vec2f(menu.getLowerRightPosition().x + GRID_PADDING + GRID_SIZE, menu.getUpperLeftPosition().y + GRID_SIZE * Human::PAGE_COUNT / 2);
 
-		CGridMenu@ index = CreateGridMenu(INDEX_POS, blob, Vec2f(2, Builder::PAGE_COUNT), "Type");
+		CGridMenu@ index = CreateGridMenu(INDEX_POS, blob, Vec2f(2, Human::PAGE_COUNT), "Type");
 		if (index !is null)
 		{
 			index.deleteAfterClick = false;
@@ -164,9 +162,9 @@ void MakeBlocksMenu(CInventory@ this, const Vec2f &in INVENTORY_CE)
 			CBitStream params;
 			params.write_u16(blob.getNetworkID());
 
-			for(u8 i = 0; i < Builder::PAGE_COUNT; i++)
+			for(u8 i = 0; i < Human::PAGE_COUNT; i++)
 			{
-				CGridButton@ button = index.AddButton("$"+PAGE_NAME[i]+"$", PAGE_NAME[i], Builder::PAGE_SELECT + i, Vec2f(2, 1), params);
+				CGridButton@ button = index.AddButton("$"+PAGE_NAME[i]+"$", PAGE_NAME[i], Human::PAGE_SELECT + i, Vec2f(2, 1), params);
 				if (button is null) continue;
 
 				button.selectOneOnClick = true;
@@ -195,19 +193,19 @@ void onCreateInventoryMenu(CInventory@ this, CBlob@ forBlob, CGridMenu@ menu)
 
 void onCommand(CInventory@ this, u8 cmd, CBitStream@ params)
 {
-	string dbg = "BuilderInventory.as: Unknown command ";
+	string dbg = "HumanInventory.as: Unknown command ";
 
 	CBlob@ blob = this.getBlob();
 	if (blob is null) return;
 
-	if (cmd >= Builder::make_block && cmd < Builder::make_reserved)
+	if (cmd >= Human::make_block && cmd < Human::make_reserved)
 	{
 		const bool isServer = getNet().isServer();
 
 		BuildBlock[][]@ blocks;
 		if (!blob.get(blocks_property, @blocks)) return;
 
-		uint i = cmd - Builder::make_block;
+		uint i = cmd - Human::make_block;
 
 		const u8 PAGE = blob.get_u8("build page");
 		if (blocks !is null && i >= 0 && i < blocks[PAGE].length)
@@ -262,11 +260,6 @@ void onCommand(CInventory@ this, u8 cmd, CBitStream@ params)
 				blob.set_TileType("buildtile", block.tile);
 			}
 
-			if (blob.isMyPlayer())
-			{
-				SetHelp(blob, "help self action", "builder", getTranslatedString("$Build$Build/Place  $LMB$"), "", 3);
-			}
-
 			if (QUICK_SWAP_ENABLED && blob.get_u8("current block") != i)
 			{
 				if (block.name == "building")
@@ -283,7 +276,7 @@ void onCommand(CInventory@ this, u8 cmd, CBitStream@ params)
 			}
 		}
 	}
-	else if (cmd == Builder::TOOL_CLEAR)
+	else if (cmd == Human::TOOL_CLEAR)
 	{
 		u16 id;
 		if (!params.saferead_u16(id)) return;
@@ -301,7 +294,7 @@ void onCommand(CInventory@ this, u8 cmd, CBitStream@ params)
 			blob.set_u8("current block", 255);
 		}
 	}
-	else if (cmd >= Builder::PAGE_SELECT && cmd < Builder::PAGE_SELECT + Builder::PAGE_COUNT)
+	else if (cmd >= Human::PAGE_SELECT && cmd < Human::PAGE_SELECT + Human::PAGE_COUNT)
 	{
 		u16 id;
 		if (!params.saferead_u16(id)) return;
@@ -311,13 +304,13 @@ void onCommand(CInventory@ this, u8 cmd, CBitStream@ params)
 
 		target.ClearGridMenus();
 
-		if (QUICK_SWAP_ENABLED && blob.get_u8("build page") != cmd - Builder::PAGE_SELECT)
+		if (QUICK_SWAP_ENABLED && blob.get_u8("build page") != cmd - Human::PAGE_SELECT)
 		{
 			blob.set_u8("prev block", 255);
 			blob.set_u8("current block", 255);
 		}
 
-		target.set_u8("build page", cmd - Builder::PAGE_SELECT);
+		target.set_u8("build page", cmd - Human::PAGE_SELECT);
 
 		ClearCarriedBlock(target);
 
@@ -334,11 +327,11 @@ void onCommand(CInventory@ this, u8 cmd, CBitStream@ params)
 			{
 				CBitStream params;
 				params.write_u16(blob.getNetworkID());
-				blob.SendCommand(Builder::TOOL_CLEAR, params);
+				blob.SendCommand(Human::TOOL_CLEAR, params);
 			}
 			else
 			{
-				blob.SendCommand(Builder::make_block + blob.get_u8("prev block"));
+				blob.SendCommand(Human::make_block + blob.get_u8("prev block"));
 			}
 		}
 
@@ -384,7 +377,7 @@ void onTick(CBlob@ this)
 		{
 			if (controls.isKeyJustPressed(KEY_KEY_1 + i))
 			{
-				this.SendCommand(Builder::make_block + blockBinds[i]);
+				this.SendCommand(Human::make_block + blockBinds[i]);
 			}
 		}
 

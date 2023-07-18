@@ -1,25 +1,19 @@
 
-//Sandbox gamemode logic script
+//Survival gamemode logic script
 
 #define SERVER_ONLY
 
 #include "CTF_Structs.as";
 #include "RulesCore.as";
 #include "RespawnSystem.as";
-
-const int maxMines = 20;
-const int maxKegs = 20;
-int mineCount = 0;
-int kegCount = 0;
-
 //simple config function - edit the variables below to change the basics
 
-void Config(SandboxCore@ this)
+void Config(SurvivalCore@ this)
 {
-	string configstr = "Rules/Sandbox/sandbox_vars.cfg";
-	if (getRules().exists("sandboxconfig"))
+	string configstr = "survival_vars.cfg";
+	if (getRules().exists("survivalconfig"))
 	{
-		configstr = getRules().get_string("sandboxconfig");
+		configstr = getRules().get_string("survivalconfig");
 	}
 	ConfigFile cfg = ConfigFile(configstr);
 
@@ -36,20 +30,20 @@ void Config(SandboxCore@ this)
 	}
 
 	//spawn after death time
-	this.spawnTime = (getTicksASecond() * cfg.read_s32("spawn_time", 15));
+	this.spawnTime = (getTicksASecond() * cfg.read_s32("spawn_time", 1));
 
 
 	getRules().Tag('quick decay');
 
 }
 
-//Sandbox spawn system
+//Survival spawn system
 
 const s32 spawnspam_limit_time = 10;
 
-shared class SandboxSpawns : RespawnSystem
+shared class SurvivalSpawns : RespawnSystem
 {
-	SandboxCore@ Sandbox_core;
+	SurvivalCore@ Survival_core;
 
 	bool force;
 	s32 limit;
@@ -57,16 +51,16 @@ shared class SandboxSpawns : RespawnSystem
 	void SetCore(RulesCore@ _core)
 	{
 		RespawnSystem::SetCore(_core);
-		@Sandbox_core = cast < SandboxCore@ > (core);
+		@Survival_core = cast < SurvivalCore@ > (core);
 
 		limit = spawnspam_limit_time;
 	}
 
 	void Update()
 	{
-		for (uint team_num = 0; team_num < Sandbox_core.teams.length; ++team_num)
+		for (uint team_num = 0; team_num < Survival_core.teams.length; ++team_num)
 		{
-			CTFTeamInfo@ team = cast < CTFTeamInfo@ > (Sandbox_core.teams[team_num]);
+			CTFTeamInfo@ team = cast < CTFTeamInfo@ > (Survival_core.teams[team_num]);
 
 			for (uint i = 0; i < team.spawns.length; i++)
 			{
@@ -91,10 +85,10 @@ shared class SandboxSpawns : RespawnSystem
 				spawn_property = u8(Maths::Min(250, (info.can_spawn_time / 30)));
 			}
 
-			string propname = "Sandbox spawn time " + info.username;
+			string propname = "Survival spawn time " + info.username;
 
-			Sandbox_core.rules.set_u8(propname, spawn_property);
-			Sandbox_core.rules.SyncToPlayer(propname, getPlayerByUsername(info.username));
+			Survival_core.rules.set_u8(propname, spawn_property);
+			Survival_core.rules.SyncToPlayer(propname, getPlayerByUsername(info.username));
 		}
 	}
 
@@ -164,7 +158,7 @@ shared class SandboxSpawns : RespawnSystem
 
 			if (p_info.blob_name == "") // if user is new
 			{
-				p_info.blob_name = "builder"; //hard-set the respawn blob
+				p_info.blob_name = "human"; //hard-set the respawn blob
 			}
 			CBlob@ playerBlob = SpawnPlayerIntoWorld(getSpawnLocation(p_info), p_info);
 
@@ -174,8 +168,8 @@ shared class SandboxSpawns : RespawnSystem
 				RemovePlayerFromSpawn(player);
 
 				// spawn resources
-				SetMaterials(playerBlob, "mat_wood", 500);
-				SetMaterials(playerBlob, "mat_stone", 250);
+				SetMaterials(playerBlob, "mat_wood", 100);
+				SetMaterials(playerBlob, "mat_stone", 100);
 			}
 		}
 	}
@@ -184,7 +178,7 @@ shared class SandboxSpawns : RespawnSystem
 	{
 		CTFPlayerInfo@ info = cast < CTFPlayerInfo@ > (p_info);
 
-		if (info is null) { warn("Sandbox LOGIC: Couldn't get player info ( in bool canSpawnPlayer(PlayerInfo@ p_info) ) "); return false; }
+		if (info is null) { warn("Survival LOGIC: Couldn't get player info ( in bool canSpawnPlayer(PlayerInfo@ p_info) ) "); return false; }
 
 		return true;
 		/*
@@ -218,13 +212,13 @@ shared class SandboxSpawns : RespawnSystem
 	{
 		CTFPlayerInfo@ info = cast < CTFPlayerInfo@ > (p_info);
 
-		if (info is null) { warn("Sandbox LOGIC: Couldn't get player info ( in void RemovePlayerFromSpawn(PlayerInfo@ p_info) )"); return; }
+		if (info is null) { warn("Survival LOGIC: Couldn't get player info ( in void RemovePlayerFromSpawn(PlayerInfo@ p_info) )"); return; }
 
-		string propname = "Sandbox spawn time " + info.username;
+		string propname = "Survival spawn time " + info.username;
 
-		for (uint i = 0; i < Sandbox_core.teams.length; i++)
+		for (uint i = 0; i < Survival_core.teams.length; i++)
 		{
-			CTFTeamInfo@ team = cast < CTFTeamInfo@ > (Sandbox_core.teams[i]);
+			CTFTeamInfo@ team = cast < CTFTeamInfo@ > (Survival_core.teams[i]);
 			int pos = team.spawns.find(info);
 
 			if (pos != -1)
@@ -234,19 +228,19 @@ shared class SandboxSpawns : RespawnSystem
 			}
 		}
 
-		Sandbox_core.rules.set_u8(propname, 255);   //not respawning
-		Sandbox_core.rules.SyncToPlayer(propname, getPlayerByUsername(info.username));
+		Survival_core.rules.set_u8(propname, 255);   //not respawning
+		Survival_core.rules.SyncToPlayer(propname, getPlayerByUsername(info.username));
 
 		info.can_spawn_time = 0;
 	}
 
 	void AddPlayerToSpawn(CPlayer@ player)
 	{
-		s32 tickspawndelay = s32(Sandbox_core.spawnTime);
+		s32 tickspawndelay = s32(Survival_core.spawnTime);
 
 		CTFPlayerInfo@ info = cast < CTFPlayerInfo@ > (core.getInfoFromPlayer(player));
 
-		if (info is null) { warn("Sandbox LOGIC: Couldn't get player info  ( in void AddPlayerToSpawn(CPlayer@ player) )"); return; }
+		if (info is null) { warn("Survival LOGIC: Couldn't get player info  ( in void AddPlayerToSpawn(CPlayer@ player) )"); return; }
 
 		RemovePlayerFromSpawn(player);
 		if (player.getTeamNum() == core.rules.getSpectatorTeamNum())
@@ -254,9 +248,9 @@ shared class SandboxSpawns : RespawnSystem
 
 //		print("ADD SPAWN FOR " + player.getUsername());
 
-		if (info.team < Sandbox_core.teams.length)
+		if (info.team < Survival_core.teams.length)
 		{
-			CTFTeamInfo@ team = cast < CTFTeamInfo@ > (Sandbox_core.teams[info.team]);
+			CTFTeamInfo@ team = cast < CTFTeamInfo@ > (Survival_core.teams[info.team]);
 
 			info.can_spawn_time = tickspawndelay;
 
@@ -272,9 +266,9 @@ shared class SandboxSpawns : RespawnSystem
 	bool isSpawning(CPlayer@ player)
 	{
 		CTFPlayerInfo@ info = cast < CTFPlayerInfo@ > (core.getInfoFromPlayer(player));
-		for (uint i = 0; i < Sandbox_core.teams.length; i++)
+		for (uint i = 0; i < Survival_core.teams.length; i++)
 		{
-			CTFTeamInfo@ team = cast < CTFTeamInfo@ > (Sandbox_core.teams[i]);
+			CTFTeamInfo@ team = cast < CTFTeamInfo@ > (Survival_core.teams[i]);
 			int pos = team.spawns.find(info);
 
 			if (pos != -1)
@@ -287,17 +281,17 @@ shared class SandboxSpawns : RespawnSystem
 
 };
 
-shared class SandboxCore : RulesCore
+shared class SurvivalCore : RulesCore
 {
 	s32 warmUpTime;
 	s32 gameDuration;
 	s32 spawnTime;
 
-	SandboxSpawns@ Sandbox_spawns;
+	SurvivalSpawns@ Survival_spawns;
 
-	SandboxCore() {}
+	SurvivalCore() {}
 
-	SandboxCore(CRules@ _rules, RespawnSystem@ _respawns)
+	SurvivalCore(CRules@ _rules, RespawnSystem@ _respawns)
 	{
 		super(_rules, _respawns);
 	}
@@ -305,7 +299,7 @@ shared class SandboxCore : RulesCore
 	void Setup(CRules@ _rules = null, RespawnSystem@ _respawns = null)
 	{
 		RulesCore::Setup(_rules, _respawns);
-		@Sandbox_spawns = cast < SandboxSpawns@ > (_respawns);
+		@Survival_spawns = cast < SurvivalSpawns@ > (_respawns);
 		server_CreateBlob("Entities/Meta/WARMusic.cfg");
 	}
 
@@ -329,7 +323,7 @@ shared class SandboxCore : RulesCore
 
 	void AddPlayer(CPlayer@ player, u8 team = 0, string default_config = "")
 	{
-		CTFPlayerInfo p(player.getUsername(), 0, "builder");
+		CTFPlayerInfo p(player.getUsername(), 0, "human");
 		players.push_back(p);
 		ChangeTeamPlayerCount(p.team, 1);
 	}
@@ -351,7 +345,7 @@ shared class SandboxCore : RulesCore
 	void CheckTeamWon()
 	{
 		if (!rules.isMatchRunning()) { return; }
-		//can you win sandbox? :)
+		//can you win Survival? :)
 	}
 
 	void addKill(int team)
@@ -379,8 +373,8 @@ void onRestart(CRules@ this)
 void Reset(CRules@ this)
 {
 	printf("Restarting rules script: " + getCurrentScriptName());
-	SandboxSpawns spawns();
-	SandboxCore core(this, spawns);
+	SurvivalSpawns spawns();
+	SurvivalCore core(this, spawns);
 	Config(core);
 
 	this.SetCurrentState(GAME);
@@ -389,41 +383,4 @@ void Reset(CRules@ this)
 	this.set("core", @core);
 	this.set("start_gametime", getGameTime() + core.warmUpTime);
 	this.set_u32("game_end_time", getGameTime() + core.gameDuration); //for TimeToEnd.as
-
-	kegCount = 0;
-	mineCount = 0;
 }
-
-void onBlobCreated(CRules@ this, CBlob@ blob)
-{
-	if (blob.getName() == "mine")
-	{
-		mineCount += 1;
-		if (mineCount > maxMines)
-		{
-			blob.server_Die(); // wont explode because its just been made
-		}
-	}
-	else if (blob.getName() == "keg")
-	{
-		kegCount += 1;
-		if (kegCount > maxKegs)
-		{
-			blob.server_Die();
-		}
-	}
-}
-
-
-void onBlobDie(CRules@ this, CBlob@ blob)
-{
-	if (blob.getName() == "mine")
-	{
-		mineCount -= 1;
-	}
-	else if (blob.getName() == "keg")
-	{
-		kegCount -= 1;
-	}
-}
-

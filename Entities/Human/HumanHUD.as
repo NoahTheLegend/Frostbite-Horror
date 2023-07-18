@@ -1,8 +1,8 @@
-//builder HUD
+//human HUD
 
 #include "/Entities/Common/GUI/ActorHUDStartPos.as";
 
-const string iconsFilename = "Entities/Characters/Builder/BuilderIcons.png";
+const string iconsFilename = "HumanIcons.png";
 const int slotsSize = 6;
 
 void onInit(CSprite@ this)
@@ -28,7 +28,7 @@ void ManageCursors(CBlob@ this)
 		}
 		else
 		{
-			getHUD().SetCursorImage("Entities/Characters/Builder/BuilderCursor.png");
+			getHUD().SetCursorImage("HumanCursor.png");
 		}
 
 	}

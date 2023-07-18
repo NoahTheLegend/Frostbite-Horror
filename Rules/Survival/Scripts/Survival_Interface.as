@@ -13,7 +13,7 @@ void onRender(CRules@ this)
 
 	if (p is null || !p.isMyPlayer()) { return; }
 
-	string propname = "Sandbox spawn time " + p.getUsername();
+	string propname = "Survival spawn time " + p.getUsername();
 	if (p.getBlob() is null && this.exists(propname))
 	{
 		u8 spawn = this.get_u8(propname);

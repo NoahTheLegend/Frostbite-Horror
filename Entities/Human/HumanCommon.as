@@ -1,4 +1,4 @@
-// BuilderCommon.as
+// HumanCommon.as
 
 #include "BuildBlock.as";
 #include "PlacementCommon.as";
