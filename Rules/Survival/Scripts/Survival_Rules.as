@@ -3,6 +3,9 @@
 
 #define SERVER_ONLY
 
+const u16 day_speed = 10; // the more the value, the slower it is going
+const u16 night_speed = 40;
+
 #include "CTF_Structs.as";
 #include "RulesCore.as";
 #include "RespawnSystem.as";
@@ -35,6 +38,17 @@ void Config(SurvivalCore@ this)
 
 	getRules().Tag('quick decay');
 
+}
+
+void onTick(CRules@ this)
+{
+	if (isClient() && isServer()) return;
+	CMap@ map = getMap();
+	if (map !is null)
+	{
+		f32 daytime = map.getDayTime();
+		this.daycycle_speed = daytime > 0.05f && daytime < 0.95f ? day_speed : night_speed;
+	}
 }
 
 //Survival spawn system
