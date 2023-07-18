@@ -78,7 +78,6 @@ f32 modifierTarget = 1;
 
 f32 fogHeightModifier = 0;
 f32 fogDarkness = 0;
-u8 map_luminance = 0;
 
 Vec2f blizzardpos = Vec2f(0,0);
 f32 uvMove = 0;
@@ -94,24 +93,10 @@ void onTick(CBlob@ this)
 		fogTarget = 50 + XORRandom(150);
 	}
 	
-	wind = Lerp(wind, windTarget, 0.02f);
-	fog = Lerp(fog, fogTarget, 0.01f);
+	wind = Lerp(wind, windTarget, 0.025f);
+	fog = Lerp(fog, fogTarget, 0.001f);
 		
 	Vec2f dir = Vec2f(0, 1).RotateBy(70);
-	
-	CBlob@[] vehicles;
-	getBlobsByTag("aerial", @vehicles);
-	for (u32 i = 0; i < vehicles.length; i++)
-	{
-		CBlob@ blob = vehicles[i];
-		if (blob !is null)
-		{
-			Vec2f pos = blob.getPosition();
-			if (map.rayCastSolidNoBlobs(Vec2f(pos.x, 0), pos)) continue;
-		
-			blob.AddForce(dir * blob.getRadius() * wind * 0.01f);
-		}
-	}
 
 	if (isClient())
 	{	
@@ -139,17 +124,16 @@ void onTick(CBlob@ this)
 			
 			modifier = Lerp(modifier, modifierTarget, 0.10f);
 			fogHeightModifier = 1.00f - (cam_pos.y / (map.tilemapheight * map.tilesize));
-			map_luminance = Maths::Min(255, 255-map.getColorLight(cam_pos).getLuminance());
 			
 			if (getGameTime() % 5 == 0) ShakeScreen(Maths::Abs(wind) * 0.03f * modifier, 90, cam.getPosition());
 			
 			this.getSprite().SetEmitSoundSpeed(0.5f + modifier * 0.5f);
-			this.getSprite().SetEmitSoundVolume(0.30f + 0.10f * modifier);
 		}
-		
-		fogDarkness = Maths::Clamp(150 + (fog * 0.10f), 0, 255);
-		fogDarkness = Maths::Max(0, s16(fogDarkness)-map_luminance);
-		printf(""+fogDarkness);
+
+		f32 t = map.getDayTime();
+		f32 time_mod = (1.0f - (t > 0.9f ? Maths::Abs(t-1.0f) : Maths::Min(0.1f, t))*10);
+		f32 base_darkness = 150;
+		fogDarkness = Maths::Clamp(base_darkness - base_darkness*time_mod * (fog * 0.10f), 0, 255);
 	}
 	
 	Snow(this);
@@ -230,7 +214,7 @@ void RenderBlizzard(CBlob@ this, int id)
 		Matrix::SetTranslation(model, blizzardpos.x, blizzardpos.y, 0.00f);
 		Render::SetModelTransform(model);
 		Render::RawQuads("BLIZZARD", Blizzard_vs);
-		f32 alpha = Maths::Clamp(Maths::Max(fog, 255 * fogHeightModifier * 1.20f) * modifier, 0, 190);
+		f32 alpha = Maths::Clamp(Maths::Max(fog, 255) * modifier, 0, 190);
 
 		Fog_vs[0].col = Fog_vs[1].col = Fog_vs[2].col = Fog_vs[3].col = SColor(alpha, fogDarkness, fogDarkness, fogDarkness);
 		Render::RawQuads("FOG", Fog_vs);
