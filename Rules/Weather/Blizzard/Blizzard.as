@@ -78,6 +78,7 @@ f32 modifierTarget = 1;
 
 f32 fogHeightModifier = 0;
 f32 fogDarkness = 0;
+u8 map_luminance = 0;
 
 Vec2f blizzardpos = Vec2f(0,0);
 f32 uvMove = 0;
@@ -116,19 +117,14 @@ void onTick(CBlob@ this)
 	{	
 		CCamera@ cam = getCamera();
 		fogHeightModifier = 0.00f;
-		
+		CBlob@ local = getLocalPlayerBlob();
+
 		if (cam !is null && uvs > 0)
 		{
-			Vec2f cam_pos = cam.getPosition();
+			Vec2f cam_pos = local !is null ? local.getPosition() : cam.getPosition();
 			blizzardpos = Vec2f(int(cam_pos.x / spritesize) * spritesize + (spritesize/2), int(cam_pos.y / spritesize) * spritesize + (spritesize/2));
 			this.setPosition(cam_pos);
 			uvMove = (uvMove - 0.09f) % uvs;
-			
-			// if (XORRandom(500) == 0)
-			// {
-				// Sound::Play("thunder_distant" + XORRandom(4));
-				// SetScreenFlash(XORRandom(100), 255, 255, 255);
-			// }
 			
 			Vec2f hit;
 			if (getMap().rayCastSolidNoBlobs(Vec2f(cam_pos.x, 0), cam_pos, hit))
@@ -143,14 +139,17 @@ void onTick(CBlob@ this)
 			
 			modifier = Lerp(modifier, modifierTarget, 0.10f);
 			fogHeightModifier = 1.00f - (cam_pos.y / (map.tilemapheight * map.tilesize));
+			map_luminance = Maths::Min(255, 255-map.getColorLight(cam_pos).getLuminance());
 			
-			if (getGameTime() % 5 == 0) ShakeScreen(Maths::Abs(wind) * 0.03f * modifier, 90, cam_pos);
+			if (getGameTime() % 5 == 0) ShakeScreen(Maths::Abs(wind) * 0.03f * modifier, 90, cam.getPosition());
 			
 			this.getSprite().SetEmitSoundSpeed(0.5f + modifier * 0.5f);
 			this.getSprite().SetEmitSoundVolume(0.30f + 0.10f * modifier);
 		}
 		
-		fogDarkness = Maths::Clamp(130 + (fog * 0.10f), 0, 255);
+		fogDarkness = Maths::Clamp(150 + (fog * 0.10f), 0, 255);
+		fogDarkness = Maths::Max(0, s16(fogDarkness)-map_luminance);
+		printf(""+fogDarkness);
 	}
 	
 	Snow(this);
@@ -202,14 +201,16 @@ void Snow(CBlob@ this)
 						}
 						else if (tileType_c == CMap::tile_snow_pile) 
 						{
-							//map.server_SetTile(pos_c, CMap::tile_snow);
+							map.server_SetTile(pos_c, CMap::tile_snow);
 						}
 					}
+					
+					const TileType tiletype_c = tile_c.type;
+
+					if (tiletype_c == CMap::tile_empty || map.isTileGrass(tiletype_c)) map.server_SetTile(pos_c, CMap::tile_snow_pile_v5);
+					else if (isTileSnowPile(tiletype_c - 1)) map.server_SetTile(pos_c, tiletype_c - 1);
+					else if (tiletype_c == CMap::tile_snow_pile) map.server_SetTile(pos_c, CMap::tile_snow);
 				}
-				
-				// if (tile_c == CMap::tile_empty || map.isTileGrass(tile_c)) map.server_SetTile(pos_c, CMap::tile_snow_pile_v5);
-				// else if (isTileSnowPile(tile_c - 1)) map.server_SetTile(pos_c, tile_c - 1);
-				// else if (tile_c == CMap::tile_snow_pile) map.server_SetTile(pos_c, CMap::tile_snow);
 			}
 		}
 	}
@@ -230,6 +231,7 @@ void RenderBlizzard(CBlob@ this, int id)
 		Render::SetModelTransform(model);
 		Render::RawQuads("BLIZZARD", Blizzard_vs);
 		f32 alpha = Maths::Clamp(Maths::Max(fog, 255 * fogHeightModifier * 1.20f) * modifier, 0, 190);
+
 		Fog_vs[0].col = Fog_vs[1].col = Fog_vs[2].col = Fog_vs[3].col = SColor(alpha, fogDarkness, fogDarkness, fogDarkness);
 		Render::RawQuads("FOG", Fog_vs);
 	}

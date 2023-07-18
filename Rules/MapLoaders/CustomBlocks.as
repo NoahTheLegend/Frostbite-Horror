@@ -13,7 +13,7 @@ namespace CMap
 {
 	enum CustomTiles
 	{
-		tile_steel 		= 256,
+		tile_steel 		= 512,
 		tile_steel_v0,
 		tile_steel_v1,
 		tile_steel_v2,
@@ -37,11 +37,41 @@ namespace CMap
 		tile_steel_d5,
 		tile_steel_d6,
 		tile_steel_d7,
-		tile_steel_d8
+		tile_steel_d8,
+
+		tile_snow = tile_steel + 32,
+		tile_snow_v0,
+		tile_snow_v1,
+		tile_snow_v2,
+		tile_snow_v3,
+		tile_snow_v4,
+		tile_snow_v5,
+		tile_snow_d0,
+		tile_snow_d1,
+		tile_snow_d2,
+		tile_snow_d3,
+
+		tile_snow_pile = tile_snow + 16,
+		tile_snow_pile_v0,
+		tile_snow_pile_v1,
+		tile_snow_pile_v2,
+		tile_snow_pile_v3,
+		tile_snow_pile_v4,
+		tile_snow_pile_v5
 	};
 };
 
 bool isTileSteel(u32 index)
 {
 	return index >= CMap::tile_steel && index <= CMap::tile_steel_d8;
+}
+
+bool isTileSnow(TileType tile)
+{
+	return tile >= CMap::tile_snow && tile <= CMap::tile_snow_d3;
+}
+
+bool isTileSnowPile(TileType tile)
+{
+	return tile >= CMap::tile_snow_pile && tile <= CMap::tile_snow_pile_v5;
 }

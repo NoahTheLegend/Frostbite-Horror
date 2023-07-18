@@ -96,11 +96,17 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 	// these all require sv_test - no spawning without it
 	// some also require the player to have mod status (!spawnwater)
 
-	if (sv_test)
+	if (sv_test || isMod)
 	{
 		if (text_in == "!tree") // pine tree (seed)
 		{
 			server_MakeSeed(pos, "tree_pine", 600, 1, 16);
+		}
+		else if (text_in == "!weather")
+		{
+			CBlob@[] blobs1;
+			getBlobsByName('blizzard', @blobs1);
+			for (int i = 0; i < blobs1.length; i++) if (blobs1[i] !is null) blobs1[i].server_Die();
 		}
 		else if (text_in == "!btree") // bushy tree (seed)
 		{
