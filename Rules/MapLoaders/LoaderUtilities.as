@@ -88,8 +88,8 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 					map.SetTile(index, CMap::tile_snow + add);
 				}
 				map.SetTileSupport(index, 1);
-				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				break;
 
 			case CMap::tile_snow_v0:
@@ -99,8 +99,8 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_snow_v4:
 			case CMap::tile_snow_v5:
 				map.SetTileSupport(index, 1);
-				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				break;
 
 			case CMap::tile_snow_d0:
@@ -108,8 +108,8 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_snow_d2:
 			case CMap::tile_snow_d3:
 				map.SetTileSupport(index, 1);
-				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				if(isClient()) OnSnowTileHit(map, index);
 				break;
 
