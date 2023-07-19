@@ -30,6 +30,6 @@ void onRender(CRules@ this)
 	//CBlob@ blizzard = getBlobByName("blizzard");
 	//if (blizzard !is null) blizzard_mod = blizzard.get_f32("level");
 
-	SColor col = SColor(25, 155, 200, 255);
+	SColor col = SColor(20, 155, 200, 255);
 	GUI::DrawIcon("VinjeteLight.png", 0, Vec2f(560, 368), Vec2f(0, 0), (getScreenWidth()*0.5f)/560, (getScreenHeight()*0.5f)/368, col);
 }

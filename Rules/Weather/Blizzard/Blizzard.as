@@ -290,12 +290,13 @@ void RenderBlizzard(CBlob@ this, int id)
 		float[] model;
 		Matrix::MakeIdentity(model);
 		f32 fl = this.get_f32("fl");
-		f32 rot = Maths::Max(5, 5.0f * fl * level*16);
-		Matrix::SetRotationDegrees(model, 0.00f, 0.00f, rot);
+		f32 rot = Maths::Max(5, Maths::Abs(5.0f * level*10.0f)) * fl;
+		f32 fin_rot = rot + Maths::Sin(getGameTime()*0.01f)*8*level;
+		Matrix::SetRotationDegrees(model, 0.00f, 0.00f, fin_rot);
 		Matrix::SetTranslation(model, blizzardpos.x, blizzardpos.y, 0.00f);
 		Render::SetModelTransform(model);
 		Render::RawQuads("BLIZZARD", Blizzard_vs);
-		f32 alpha = Maths::Clamp(Maths::Min((f32(this.getTickSinceCreated())-256.0f)*0.1f, Maths::Max(fog, 255) * modifier), 0, 190*Maths::Min(1.0f, level));
+		f32 alpha = Maths::Clamp(Maths::Min((f32(this.getTickSinceCreated())-256.0f)*0.1f, Maths::Max(fog, 255) * modifier), 0, 200*Maths::Min(1.0f, level));
 		Fog_vs[0].col = Fog_vs[1].col = Fog_vs[2].col = Fog_vs[3].col = SColor(alpha, fogDarkness, fogDarkness, fogDarkness);
 		if (current_h >= -512.0f) Render::RawQuads("FOG", Fog_vs);
 	}
