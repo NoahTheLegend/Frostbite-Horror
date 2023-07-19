@@ -75,3 +75,9 @@ bool isTileSnowPile(TileType tile)
 {
 	return tile >= CMap::tile_snow_pile && tile <= CMap::tile_snow_pile_v5;
 }
+
+bool isSteelTile(CMap@ map, Vec2f pos)
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_steel && tile <= CMap::tile_steel_v14;
+}

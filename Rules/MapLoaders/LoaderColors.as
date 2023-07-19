@@ -53,6 +53,17 @@ namespace map_colors
 {
 	enum color
 	{
+		// CUSTOM
+		tile_snow              = 0xFFaffaff,
+		tile_snow_pile         = 0xFFaafaff, // biggest
+		tile_snow_pile_v0      = 0xFF9ee9ee, 
+		tile_snow_pile_v1      = 0xFF7cc7cc,
+		tile_snow_pile_v2      = 0xFF5aa5aa,
+		tile_snow_pile_v3      = 0xFFa5a5ff,
+		tile_snow_pile_v4      = 0xFF5585aa,
+		tile_snow_pile_v5      = 0xFF456590, // smallest
+
+		tile_steel             = 0xFF25335c,
 		// TILES
 		tile_ground            = 0xFF844715, // ARGB(255, 132,  71,  21);
 		tile_ground_back       = 0xFF3B1406, // ARGB(255,  59,  20,   6);

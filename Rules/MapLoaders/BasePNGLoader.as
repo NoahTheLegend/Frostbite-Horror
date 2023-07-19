@@ -200,6 +200,17 @@ class PNGLoader
 		{
 			switch (pixel.color)
 			{
+			// Custom
+			case map_colors::tile_snow:             map.SetTile(offset, CMap::tile_snow);          	  break;   
+			case map_colors::tile_snow_pile:        map.SetTile(offset, CMap::tile_snow_pile);        break;    
+			case map_colors::tile_snow_pile_v0:     map.SetTile(offset, CMap::tile_snow_pile_v0);     break;    
+			case map_colors::tile_snow_pile_v1:     map.SetTile(offset, CMap::tile_snow_pile_v1);     break;    
+			case map_colors::tile_snow_pile_v2:     map.SetTile(offset, CMap::tile_snow_pile_v2);     break;    
+			case map_colors::tile_snow_pile_v3:     map.SetTile(offset, CMap::tile_snow_pile_v3);     break;    
+			case map_colors::tile_snow_pile_v4:     map.SetTile(offset, CMap::tile_snow_pile_v4);     break;    
+			case map_colors::tile_snow_pile_v5:     map.SetTile(offset, CMap::tile_snow_pile_v5);     break;
+
+			case map_colors::tile_steel:            map.SetTile(offset, CMap::tile_steel);            break;
 			// Tiles
 			case map_colors::tile_ground:           map.SetTile(offset, CMap::tile_ground);           break;
 			case map_colors::tile_ground_back:      map.SetTile(offset, CMap::tile_ground_back);      break;
