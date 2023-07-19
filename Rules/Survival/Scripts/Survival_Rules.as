@@ -21,7 +21,7 @@ void Config(SurvivalCore@ this)
 	ConfigFile cfg = ConfigFile(configstr);
 
 	//how long for the game to play out?
-	s32 gameDurationMinutes = cfg.read_s32("game_time", -1);
+	s32 gameDurationMinutes = -1;
 	if (gameDurationMinutes <= 0)
 	{
 		this.gameDuration = 0;
@@ -33,7 +33,7 @@ void Config(SurvivalCore@ this)
 	}
 
 	//spawn after death time
-	this.spawnTime = (getTicksASecond() * cfg.read_s32("spawn_time", 1));
+	this.spawnTime = getTicksASecond() * 1;
 
 
 	getRules().Tag('quick decay');

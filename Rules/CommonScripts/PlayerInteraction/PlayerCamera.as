@@ -179,21 +179,10 @@ void onRender(CRules@ this)
 
 	GUI::SetFont("menu");
 
-	const int endTime1 = helptime + (getTicksASecond() * 12);
-	const int endTime2 = helptime + (getTicksASecond() * 24);
-
 	string text = "";
+	text = "You are dead. Wait someone to reanimate you or till next morning.";
 
-	if (time < endTime1)
-	{
-		text = "You can use the movement keys and clicking to move the camera.";
-	}
-	else if (time < endTime2)
-	{
-		text = "If you click on a player the camera will follow them.\nSimply press the movement keys or click again to stop following a player.";
-	}
-
-	if (text != "" && u_showtutorial)
+	if (text != "")
 	{
 		//translate
 		text = getTranslatedString(text);

@@ -35,7 +35,6 @@ void onInit(CBlob@ this)
 	this.set_f32("level", 0.15f);
 	this.set_f32("max_level", 1.25f);
 	this.set_f32("level_increase", 1.0001f + this.getTimeToDie()/500000);
-	getRules().set_bool("raining", true);
 
 	if (isClient())
 	{
@@ -139,6 +138,8 @@ void onTick(CBlob@ this)
 	f32 level = Maths::Max(this.get_f32("level"), this.get_f32("min_level"));
 	f32 level_increase = this.get_f32("level_increase");
 
+	getRules().set_bool("raining", true);
+
 	this.set_f32("level", Maths::Min(max_level, level*level_increase));
 	if (level_increase > 1.000f && this.getTimeToDie() <= 60 && this.getTickSinceCreated() > min_lifetime)
 	{
@@ -213,7 +214,7 @@ void onTick(CBlob@ this)
 		fogDarkness = Maths::Clamp(base_darkness - base_darkness*time_mod/4 * (fog * 0.25f), 25, 255);
 	}
 	
-	if (getGameTime() % (15 + (20 * 1.0f-level)) == 0) Snow(this);
+	if (getGameTime() % (30 - (15 * (level/max_level))) == 0) Snow(this);
 }
 
 const int max_snow_difference = 4;
@@ -289,7 +290,7 @@ void RenderBlizzard(CBlob@ this, int id)
 		float[] model;
 		Matrix::MakeIdentity(model);
 		f32 fl = this.get_f32("fl");
-		f32 rot = Maths::Max(5, 5.0f * fl * level*12);
+		f32 rot = Maths::Max(5, 5.0f * fl * level*16);
 		Matrix::SetRotationDegrees(model, 0.00f, 0.00f, rot);
 		Matrix::SetTranslation(model, blizzardpos.x, blizzardpos.y, 0.00f);
 		Render::SetModelTransform(model);
