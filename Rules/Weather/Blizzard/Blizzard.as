@@ -214,7 +214,7 @@ void onTick(CBlob@ this)
 		fogDarkness = Maths::Clamp(base_darkness - base_darkness*time_mod/4 * (fog * 0.25f), 25, 255);
 	}
 	
-	if (getGameTime() % (30 - (15 * (level/max_level))) == 0) Snow(this);
+	if (getGameTime() % (45 - (23 * (level/max_level))) == 0) Snow(this);
 }
 
 const int max_snow_difference = 4;
