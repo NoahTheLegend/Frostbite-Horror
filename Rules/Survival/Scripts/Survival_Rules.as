@@ -45,7 +45,7 @@ void CheckForRespawn(CRules@ this)
 {
 	CMap@ map = getMap();
 	if (map is null) return;
-	
+
 	f32 t = Maths::Round(map.getDayTime()*100)*0.1f;
 	//printf(""+t);
 	if (t == 1)
@@ -219,15 +219,9 @@ shared class SurvivalSpawns : RespawnSystem
 		CBlob@[] spawns;
 		getBlobsByName("tent", @spawns);
 
-		for (u16 i = 0; i < spawns.length; i++)
-		{
-			if (XORRandom(1000) < 1000/spawns.length)
-			{
-				CBlob@ b = spawns[i];
-				if (b is null) continue;
-				return b.getPosition();
-			}
-		}
+		CBlob@ b = spawns[XORRandom(spawns.length)];
+		if (b !is null)
+			return b.getPosition();
 
 		return Vec2f(0, 0);
 	}
