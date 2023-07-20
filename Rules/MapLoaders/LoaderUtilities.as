@@ -4,6 +4,7 @@
 #include "ParticleSparks.as";
 #include "Hitters.as";
 #include "CustomBlocks.as";
+#include "TileVariationLegacy.as";
 
 const Vec2f[] directions =
 {
@@ -15,10 +16,19 @@ const Vec2f[] directions =
 
 bool onMapTileCollapse(CMap@ map, u32 offset)
 {
-	if(isDummyTile(map.getTile(offset).type))
+	Tile tile = map.getTile(offset);
+	if(isDummyTile(tile.type))
 	{
 		CBlob@ blob = getBlobByNetworkID(server_getDummyGridNetworkID(offset));
 		if(blob !is null)
+		{
+			blob.server_Die();
+		}
+	}
+	else if (isTileSnow(tile.type) || isTileSnowPile(tile.type)) // seemingly doesnt work?
+	{
+		CBlob@ blob = getBlobByNetworkID(server_getDummyGridNetworkID(offset));
+		if (blob !is null) // doesnt pass
 		{
 			blob.server_Die();
 		}
@@ -106,6 +116,64 @@ TileType server_onTileHit(CMap@ map, f32 damage, u32 index, TileType oldTileType
 
 			case CMap::tile_steel_d8:
 				return CMap::tile_empty;
+			
+			// elder bricks
+			case CMap::tile_elderbrick:
+			case CMap::tile_elderbrick_v0:
+				return CMap::tile_elderbrick_d0;
+			
+			case CMap::tile_elderbrick_d0:
+			case CMap::tile_elderbrick_d1:
+			case CMap::tile_elderbrick_d2:
+			case CMap::tile_elderbrick_d3:
+				return oldTileType + 1;
+
+			case CMap::tile_elderbrick_d4:
+				return CMap::tile_ground_back;
+			
+			// polished stone
+			case CMap::tile_polishedstone:
+				return CMap::tile_polishedstone_d0;
+
+			case CMap::tile_polishedstone_v0:
+			case CMap::tile_polishedstone_v1:
+			case CMap::tile_polishedstone_v2:
+			case CMap::tile_polishedstone_v3:
+			case CMap::tile_polishedstone_v4:
+			case CMap::tile_polishedstone_v5:
+			case CMap::tile_polishedstone_v6:
+			case CMap::tile_polishedstone_v7:
+			case CMap::tile_polishedstone_v8:
+			case CMap::tile_polishedstone_v9:
+			case CMap::tile_polishedstone_v10:
+			case CMap::tile_polishedstone_v11:
+			case CMap::tile_polishedstone_v12:
+			case CMap::tile_polishedstone_v13:
+			case CMap::tile_polishedstone_v14:
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+
+				map.server_SetTile(pos, CMap::tile_polishedstone_d0);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE);
+
+				for (u8 i = 0; i < 4; i++)
+				{
+					polishedstone_Update(map, map.getTileWorldPosition(index) + directions[i]);
+				}
+				return CMap::tile_polishedstone_d0;
+			}
+
+			case CMap::tile_polishedstone_d0:
+			case CMap::tile_polishedstone_d1:
+			case CMap::tile_polishedstone_d2:
+			case CMap::tile_polishedstone_d3:
+			case CMap::tile_polishedstone_d4:
+			case CMap::tile_polishedstone_d5:
+				return oldTileType + 1;
+
+			case CMap::tile_polishedstone_d6:
+				return CMap::tile_empty;
 		}
 	}
 
@@ -125,6 +193,10 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				OnSnowTileDestroyed(map, index);
 			else if (tile_old == CMap::tile_steel_d8)
 				OnSteelTileDestroyed(map, index);
+			else if (tile_old == CMap::tile_elderbrick_d4)
+				OnElderBrickTileDestroyed(map, index);
+			else if (tile_old == CMap::tile_polishedstone_d6)
+				OnPolishedStoneTileDestroyed(map, index);
 
 			if(isTileSnowPile(map.getTile(index-map.tilemapwidth).type) && map.tilemapwidth < index)
 				map.server_SetTile(map.getTileWorldPosition(index-map.tilemapwidth), CMap::tile_empty);
@@ -146,7 +218,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 					if (add > 0)
 					map.SetTile(index, CMap::tile_snow + add);
 				}
-				map.SetTileSupport(index, 1);
+				map.SetTileSupport(index, 0);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				break;
@@ -157,7 +229,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_snow_v3:
 			case CMap::tile_snow_v4:
 			case CMap::tile_snow_v5:
-				map.SetTileSupport(index, 1);
+				map.SetTileSupport(index, 0);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				break;
@@ -166,7 +238,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_snow_d1:
 			case CMap::tile_snow_d2:
 			case CMap::tile_snow_d3:
-				map.SetTileSupport(index, 1);
+				map.SetTileSupport(index, 0);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				if(isClient()) OnSnowTileHit(map, index);
@@ -233,6 +305,77 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
 				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				OnSteelTileHit(map, index);
+				break;
+
+			case CMap::tile_elderbrick:
+				elderbrick_SetTile(map, pos);
+				map.SetTileSupport(index, 255);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+
+				break;
+				
+			case CMap::tile_elderbrick_v0:
+				map.SetTileSupport(index, 255);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+
+				break;
+
+			case CMap::tile_elderbrick_d0:
+			case CMap::tile_elderbrick_d1:
+			case CMap::tile_elderbrick_d2:
+			case CMap::tile_elderbrick_d3:
+			case CMap::tile_elderbrick_d4:
+				map.SetTileSupport(index, 255);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				OnElderBrickTileHit(map, index);
+				break;
+
+			case CMap::tile_polishedstone:
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+
+				polishedstone_SetTile(map, pos);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag( index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+
+				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 0.925f);
+
+				break;
+			}
+
+			case CMap::tile_polishedstone_v0:
+			case CMap::tile_polishedstone_v1:
+			case CMap::tile_polishedstone_v2:
+			case CMap::tile_polishedstone_v3:
+			case CMap::tile_polishedstone_v4:
+			case CMap::tile_polishedstone_v5:
+			case CMap::tile_polishedstone_v6:
+			case CMap::tile_polishedstone_v7:
+			case CMap::tile_polishedstone_v8:
+			case CMap::tile_polishedstone_v9:
+			case CMap::tile_polishedstone_v10:
+			case CMap::tile_polishedstone_v11:
+			case CMap::tile_polishedstone_v12:
+			case CMap::tile_polishedstone_v13:
+			case CMap::tile_polishedstone_v14:
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+
+				break;
+
+			case CMap::tile_polishedstone_d0:
+			case CMap::tile_polishedstone_d1:
+			case CMap::tile_polishedstone_d2:
+			case CMap::tile_polishedstone_d3:
+			case CMap::tile_polishedstone_d4:
+			case CMap::tile_polishedstone_d5:
+			case CMap::tile_polishedstone_d6:
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				OnPolishedStoneTileHit(map, index);
 				break;
 		}
 	}
@@ -324,5 +467,91 @@ void OnSteelTileDestroyed(CMap@ map, u32 index)
 		Vec2f pos = map.getTileWorldPosition(index);
 
 		Sound::Play("destroy_stone.ogg", pos, 1.0f, 0.9f);
+	}
+}
+
+void elderbrick_SetTile(CMap@ map, Vec2f pos)
+{
+	Tile tile = map.getTile(pos);
+	tile.dirt = 255;
+	if (!map.isTileSolid(map.getTile(pos-Vec2f(0,8))) && !isTileCustomSolid(map.getTile(pos-Vec2f(0,8)).type))
+		map.SetTile(map.getTileOffset(pos), CMap::tile_elderbrick_v0);
+}
+
+void OnElderBrickTileHit(CMap@ map, u32 index)
+{
+	map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+	map.RemoveTileFlag( index, Tile::LIGHT_PASSES );
+
+	if (isClient())
+	{
+		Vec2f pos = map.getTileWorldPosition(index);
+
+		Sound::Play("dig_stone.ogg", pos, 1.0f, 0.825f);
+		sparks(pos, 1, 1);
+	}
+}
+
+void OnElderBrickTileDestroyed(CMap@ map, u32 index)
+{
+	if (isClient())
+	{
+		Vec2f pos = map.getTileWorldPosition(index);
+
+		Sound::Play("destroy_stone.ogg", pos, 1.0f, 0.75f);
+	}
+}
+
+
+void polishedstone_SetTile(CMap@ map, Vec2f pos)
+{
+	map.SetTile(map.getTileOffset(pos), CMap::tile_polishedstone + polishedstone_GetMask(map, pos));
+
+	for (u8 i = 0; i < 4; i++)
+	{
+		polishedstone_Update(map, pos + directions[i]);
+	}
+}
+
+u8 polishedstone_GetMask(CMap@ map, Vec2f pos)
+{
+	u8 mask = 0;
+
+	for (u8 i = 0; i < 4; i++)
+	{
+		if (isPolishedStoneTile(map, pos + directions[i])) mask |= 1 << i;
+	}
+
+	return mask;
+}
+
+void polishedstone_Update(CMap@ map, Vec2f pos)
+{
+	u16 tile = map.getTile(pos).type;
+	if (isPolishedStoneTile(map, pos))
+		map.SetTile(map.getTileOffset(pos),CMap::tile_polishedstone+polishedstone_GetMask(map,pos));
+}
+
+void OnPolishedStoneTileHit(CMap@ map, u32 index)
+{
+	map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+	map.RemoveTileFlag( index, Tile::LIGHT_PASSES );
+
+	if (isClient())
+	{
+		Vec2f pos = map.getTileWorldPosition(index);
+
+		Sound::Play("PickStone" + (1 + XORRandom(3)), pos, 1.0f, 0.95f);
+		sparks(pos, 1, 1);
+	}
+}
+
+void OnPolishedStoneTileDestroyed(CMap@ map, u32 index)
+{
+	if (isClient())
+	{
+		Vec2f pos = map.getTileWorldPosition(index);
+
+		Sound::Play("destroy_wall.ogg", pos, 1.0f, 0.9f);
 	}
 }

@@ -57,13 +57,56 @@ namespace CMap
 		tile_snow_pile_v2,
 		tile_snow_pile_v3,
 		tile_snow_pile_v4,
-		tile_snow_pile_v5
+		tile_snow_pile_v5,
+
+		tile_elderbrick = tile_steel - 48,
+		tile_elderbrick_v0,
+		tile_elderbrick_d0,
+		tile_elderbrick_d1,
+		tile_elderbrick_d2,
+		tile_elderbrick_d3,
+		tile_elderbrick_d4,
+
+		tile_polishedstone = tile_elderbrick + 16,
+		tile_polishedstone_v0,
+		tile_polishedstone_v1,
+		tile_polishedstone_v2,
+		tile_polishedstone_v3,
+		tile_polishedstone_v4,
+		tile_polishedstone_v5,
+		tile_polishedstone_v6,
+		tile_polishedstone_v7,
+		tile_polishedstone_v8,
+		tile_polishedstone_v9,
+		tile_polishedstone_v10,
+		tile_polishedstone_v11,
+		tile_polishedstone_v12,
+		tile_polishedstone_v13,
+		tile_polishedstone_v14,
+		tile_polishedstone_d0 = tile_polishedstone + 16,
+		tile_polishedstone_d1,
+		tile_polishedstone_d2,
+		tile_polishedstone_d3,
+		tile_polishedstone_d4,
+		tile_polishedstone_d5,
+		tile_polishedstone_d6
 	};
 };
+
+bool isTileCustomSolid(u32 index)
+{
+	return isTileSteel(index) || isTileSnow(index);
+}
 
 bool isTileSteel(u32 index)
 {
 	return index >= CMap::tile_steel && index <= CMap::tile_steel_d8;
+}
+
+bool isSteelTile(CMap@ map, Vec2f pos) // required for getMask function
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_steel && tile <= CMap::tile_steel_v14;
 }
 
 bool isTileSnow(TileType tile)
@@ -76,8 +119,18 @@ bool isTileSnowPile(TileType tile)
 	return tile >= CMap::tile_snow_pile && tile <= CMap::tile_snow_pile_v5;
 }
 
-bool isSteelTile(CMap@ map, Vec2f pos)
+bool isTileElderBrick(u32 index)
+{
+	return index >= CMap::tile_elderbrick && index <= CMap::tile_elderbrick_d4;
+}
+
+bool isTilePolishedStone(u32 index)
+{
+	return index >= CMap::tile_polishedstone && index <= CMap::tile_polishedstone_d6;
+}
+
+bool isPolishedStoneTile(CMap@ map, Vec2f pos) // required for getMask function
 {
 	u16 tile = map.getTile(pos).type;
-	return tile >= CMap::tile_steel && tile <= CMap::tile_steel_v14;
+	return tile >= CMap::tile_polishedstone && tile <= CMap::tile_polishedstone_v14;
 }

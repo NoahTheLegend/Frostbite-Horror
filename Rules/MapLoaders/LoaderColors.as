@@ -64,6 +64,8 @@ namespace map_colors
 		tile_snow_pile_v5      = 0xFF456590, // smallest
 
 		tile_steel             = 0xFF25335c,
+		tile_elderbrick        = 0xFF779977,
+		tile_polishedstone     = 0xFF556677,
 		// TILES
 		tile_ground            = 0xFF844715, // ARGB(255, 132,  71,  21);
 		tile_ground_back       = 0xFF3B1406, // ARGB(255,  59,  20,   6);
