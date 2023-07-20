@@ -4,7 +4,7 @@
 #define SERVER_ONLY
 
 const u16 day_speed = 10; // the more the value, the slower it is going
-const u16 night_speed = 40;
+const u16 night_speed = 30;
 
 #include "CTF_Structs.as";
 #include "RulesCore.as";
@@ -21,33 +21,46 @@ void Config(SurvivalCore@ this)
 	ConfigFile cfg = ConfigFile(configstr);
 
 	//how long for the game to play out?
-	s32 gameDurationMinutes = -1;
-	if (gameDurationMinutes <= 0)
-	{
-		this.gameDuration = 0;
-		getRules().set_bool("no timer", true);
-	}
-	else
-	{
-		this.gameDuration = (getTicksASecond() * 60 * gameDurationMinutes);
-	}
+
+	this.gameDuration = 0;
+	getRules().set_bool("no timer", true);
 
 	//spawn after death time
-	this.spawnTime = getTicksASecond() * 1;
-
-
-	getRules().Tag('quick decay');
-
+	this.spawnTime = getTicksASecond() * 10;
 }
 
 void onTick(CRules@ this)
 {
-	if (isClient() && isServer()) return;
 	CMap@ map = getMap();
-	if (map !is null)
+	if (map is null) return;
+
+	CheckForRespawn(this);
+
+	//if (isClient() && isServer()) return;
+	f32 daytime = map.getDayTime();
+	this.daycycle_speed = daytime > 0.05f && daytime < 0.95f ? day_speed : night_speed;
+}
+
+void CheckForRespawn(CRules@ this)
+{
+	CMap@ map = getMap();
+	if (map is null) return;
+	
+	f32 t = Maths::Round(map.getDayTime()*100)*0.1f;
+	//printf(""+t);
+	if (t == 1)
 	{
-		f32 daytime = map.getDayTime();
-		this.daycycle_speed = daytime > 0.05f && daytime < 0.95f ? day_speed : night_speed;
+		RulesCore@ core;
+		this.get("core", @core);
+		if (core !is null && core.respawns !is null)
+		{
+			for (u8 i = 0; i < getPlayersCount(); i++)
+			{
+				CPlayer@ p = getPlayer(i);
+				if (p is null || p.getBlob() !is null) continue;
+				core.respawns.AddPlayerToSpawn(p);
+			}
+		}
 	}
 }
 
@@ -203,14 +216,16 @@ shared class SurvivalSpawns : RespawnSystem
 
 	Vec2f getSpawnLocation(PlayerInfo@ p_info)
 	{
-		CTFPlayerInfo@ c_info = cast < CTFPlayerInfo@ > (p_info);
-		if (c_info !is null)
+		CBlob@[] spawns;
+		getBlobsByName("tent", @spawns);
+
+		for (u16 i = 0; i < spawns.length; i++)
 		{
-			CMap@ map = getMap();
-			if (map !is null)
+			if (XORRandom(1000) < 1000/spawns.length)
 			{
-				f32 x = XORRandom(2) == 0 ? 32.0f : map.tilemapwidth * map.tilesize - 32.0f;
-				return Vec2f(x, map.getLandYAtX(s32(x / map.tilesize)) * map.tilesize - 16.0f);
+				CBlob@ b = spawns[i];
+				if (b is null) continue;
+				return b.getPosition();
 			}
 		}
 
@@ -342,18 +357,18 @@ shared class SurvivalCore : RulesCore
 		ChangeTeamPlayerCount(p.team, 1);
 	}
 
-	void onPlayerDie(CPlayer@ victim, CPlayer@ killer, u8 customData)
-	{
-		if (!rules.isMatchRunning()) { return; }
-
-		if (victim !is null)
-		{
-			if (killer !is null && killer.getTeamNum() != victim.getTeamNum())
-			{
-				addKill(killer.getTeamNum());
-			}
-		}
-	}
+	//void onPlayerDie(CPlayer@ victim, CPlayer@ killer, u8 customData)
+	//{
+	//	if (!rules.isMatchRunning()) { return; }
+//
+	//	if (victim !is null)
+	//	{
+	//		if (killer !is null && killer.getTeamNum() != victim.getTeamNum())
+	//		{
+	//			addKill(killer.getTeamNum());
+	//		}
+	//	}
+	//}
 
 	//checks
 	void CheckTeamWon()

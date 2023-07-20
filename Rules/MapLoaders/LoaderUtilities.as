@@ -4,7 +4,6 @@
 #include "ParticleSparks.as";
 #include "Hitters.as";
 #include "CustomBlocks.as";
-#include "TileVariationLegacy.as";
 
 const Vec2f[] directions =
 {

@@ -213,6 +213,9 @@ class PNGLoader
 			case map_colors::tile_steel:            map.SetTile(offset, CMap::tile_steel);            break;
 			case map_colors::tile_elderbrick:       map.SetTile(offset, CMap::tile_elderbrick);       break;
 			case map_colors::tile_polishedstone:    map.SetTile(offset, CMap::tile_polishedstone);    break;
+
+			case map_colors::spawn:     			spawnBlob(map, "tent",  offset); break;
+
 			// Tiles
 			case map_colors::tile_ground:           map.SetTile(offset, CMap::tile_ground);           break;
 			case map_colors::tile_ground_back:      map.SetTile(offset, CMap::tile_ground_back);      break;

@@ -66,6 +66,8 @@ namespace map_colors
 		tile_steel             = 0xFF25335c,
 		tile_elderbrick        = 0xFF779977,
 		tile_polishedstone     = 0xFF556677,
+		
+		spawn                  = 0xFF99aaFF,
 		// TILES
 		tile_ground            = 0xFF844715, // ARGB(255, 132,  71,  21);
 		tile_ground_back       = 0xFF3B1406, // ARGB(255,  59,  20,   6);
