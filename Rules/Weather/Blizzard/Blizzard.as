@@ -5,6 +5,8 @@
 const f32 volume_smooth = 0.000025f;
 const u8 smaller_blizzard_chance = 100;
 const u16 min_lifetime = 30*30;
+const f32 fadeout_ttd = min_lifetime;
+const f32 fadein_tsc = 45*30;
 
 void onInit(CBlob@ this)
 {
@@ -210,6 +212,7 @@ void onTick(CBlob@ this)
 
 		f32 t = map.getDayTime();
 		f32 time_mod = (1.0f - (t > 0.9f ? Maths::Abs(t-1.0f) : Maths::Min(0.1f, t))*10);
+		this.set_f32("time_mod", time_mod);
 		f32 base_darkness = 200;
 		fogDarkness = Maths::Clamp(base_darkness - base_darkness*time_mod/4 * (fog * 0.25f), 25, 255);
 	}
@@ -289,14 +292,33 @@ void RenderBlizzard(CBlob@ this, int id)
 		Blizzard_vs[2].v = Blizzard_vs[3].v = uvMove + uvs;
 		float[] model;
 		Matrix::MakeIdentity(model);
+
 		f32 fl = this.get_f32("fl");
-		f32 rot = Maths::Max(5, Maths::Abs(5.0f * level*10.0f)) * fl;
-		f32 fin_rot = rot + Maths::Sin(getGameTime()*0.01f)*8*level;
-		Matrix::SetRotationDegrees(model, 0.00f, 0.00f, fin_rot);
+		f32 exact_rot = Maths::Max(5, Maths::Abs(5.0f * level*10.0f)) * fl;
+		f32 rot = exact_rot + Maths::Sin(getGameTime()*0.01f)*8*level;
+
+		Matrix::SetRotationDegrees(model, 0.00f, 0.00f, rot);
 		Matrix::SetTranslation(model, blizzardpos.x, blizzardpos.y, 0.00f);
 		Render::SetModelTransform(model);
 		Render::RawQuads("BLIZZARD", Blizzard_vs);
-		f32 alpha = Maths::Clamp(Maths::Min((f32(this.getTickSinceCreated())-256.0f)*0.1f, Maths::Max(fog, 255) * modifier), 0, 200*Maths::Min(1.0f, level));
+		
+		f32 tsc = f32(this.getTickSinceCreated());
+		f32 tsc_mod = Maths::Min(tsc/fadein_tsc, 1.0f);
+		f32 alpha = Maths::Clamp(Maths::Min((tsc-256.0f)*0.1f, Maths::Max(fog, 255) * modifier), 0, 200*Maths::Min(1.0f, level));
+		f32 snow_alpha = tsc_mod * Maths::Clamp(255-255*this.get_f32("time_mod"), 55, 255);
+		f32 fadeout_ttd_s = fadeout_ttd/30;
+		f32 ttd = this.getTimeToDie();
+		if (ttd<fadeout_ttd_s)
+		{
+			snow_alpha *= ttd/fadeout_ttd_s;
+			alpha *= ttd/fadeout_ttd_s;
+		}
+
+		Blizzard_vs[0].col.setAlpha(snow_alpha);
+		Blizzard_vs[1].col.setAlpha(snow_alpha);
+		Blizzard_vs[2].col.setAlpha(snow_alpha);
+		Blizzard_vs[3].col.setAlpha(snow_alpha);
+
 		Fog_vs[0].col = Fog_vs[1].col = Fog_vs[2].col = Fog_vs[3].col = SColor(alpha, fogDarkness, fogDarkness, fogDarkness);
 		if (current_h >= -512.0f) Render::RawQuads("FOG", Fog_vs);
 	}
@@ -310,5 +332,4 @@ f32 Lerp(f32 v0, f32 v1, f32 t)
 void onDie(CBlob@ this)
 {
 	getRules().set_bool("raining", false);
-	getMap().CreateSkyGradient("skygradient.png");
 }
