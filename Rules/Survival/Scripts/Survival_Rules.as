@@ -217,7 +217,7 @@ shared class SurvivalSpawns : RespawnSystem
 	Vec2f getSpawnLocation(PlayerInfo@ p_info)
 	{
 		CBlob@[] spawns;
-		getBlobsByName("tent", @spawns);
+		getBlobsByTag("spawn", @spawns);
 
 		CBlob@ b = spawns[XORRandom(spawns.length)];
 		if (b !is null)
