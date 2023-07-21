@@ -187,7 +187,7 @@ void onTick(CBlob@ this)
 			blizzardpos = Vec2f(int(cam_pos.x / spritesize) * spritesize + (spritesize/2), current_h);
 
 			this.setPosition(cam_pos);
-			uvMove = (uvMove - 0.05f*level) % (uvs*level);
+			uvMove = (uvMove - 0.075f*level) % (uvs*level);
 			
 			Vec2f hit;
 			if (getMap().rayCastSolidNoBlobs(Vec2f(cam_pos.x, 0), cam_pos, hit))

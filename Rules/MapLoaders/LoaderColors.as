@@ -70,6 +70,7 @@ namespace map_colors
 		spawnalpha             = 0xFF99aaff,
 		spawnbeta              = 0xFF99cccc,
 		locker                 = 0xFFaacaaa,
+		barrel                 = 0xFFac7575,
 		// TILES
 		tile_ground            = 0xFF844715, // ARGB(255, 132,  71,  21);
 		tile_ground_back       = 0xFF3B1406, // ARGB(255,  59,  20,   6);
