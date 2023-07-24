@@ -210,10 +210,17 @@ class PNGLoader
 			case map_colors::tile_snow_pile_v3:     map.SetTile(offset, CMap::tile_snow_pile_v3);     break;    
 			case map_colors::tile_snow_pile_v4:     map.SetTile(offset, CMap::tile_snow_pile_v4);     break;    
 			case map_colors::tile_snow_pile_v5:     map.SetTile(offset, CMap::tile_snow_pile_v5);     break;
+			case map_colors::tile_ice:              map.SetTile(offset, CMap::tile_ice);              break;
 
 			case map_colors::tile_steel:            map.SetTile(offset, CMap::tile_steel);            break;
+			case map_colors::tile_caution:          map.SetTile(offset, CMap::tile_caution);          break;
+			case map_colors::tile_caution_v0:       map.SetTile(offset, CMap::tile_caution_v0);       break;
+			case map_colors::tile_caution_v1:       map.SetTile(offset, CMap::tile_caution_v1);       break;
+			case map_colors::tile_caution_v2:       map.SetTile(offset, CMap::tile_caution_v2);       break;
+
 			case map_colors::tile_elderbrick:       map.SetTile(offset, CMap::tile_elderbrick);       break;
 			case map_colors::tile_polishedstone:    map.SetTile(offset, CMap::tile_polishedstone);    break;
+			case map_colors::tile_bpolishedstone:   map.SetTile(offset, CMap::tile_bpolishedstone);   break;
 
 			// blobs
 			case map_colors::spawnalpha:     		spawnBlob(map, "spawnalpha", offset); break;

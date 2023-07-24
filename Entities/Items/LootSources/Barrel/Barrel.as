@@ -34,7 +34,7 @@ void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
 const string[] anims = {
 	"red",
 	"yellow",
-	"greem"
+	"green"
 };
 
 void onInit(CSprite@ this)

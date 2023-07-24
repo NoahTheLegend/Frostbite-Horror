@@ -62,10 +62,17 @@ namespace map_colors
 		tile_snow_pile_v3      = 0xFFa5a5ff,
 		tile_snow_pile_v4      = 0xFF5585aa,
 		tile_snow_pile_v5      = 0xFF456590, // smallest
+		tile_ice               = 0xFF4070f1,
 
 		tile_steel             = 0xFF25335c,
+		tile_caution           = 0xFFeeee00,
+		tile_caution_v0        = 0xFFcccc00,
+		tile_caution_v1        = 0xFFaaaa00,
+		tile_caution_v2        = 0xFF999900,
+
 		tile_elderbrick        = 0xFF779977,
 		tile_polishedstone     = 0xFF556677,
+		tile_bpolishedstone    = 0xFF334455,
 		
 		spawnalpha             = 0xFF99aaff,
 		spawnbeta              = 0xFF99cccc,
