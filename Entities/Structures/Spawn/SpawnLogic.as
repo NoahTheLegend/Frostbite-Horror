@@ -2,6 +2,7 @@
 
 void onInit(CBlob@ this)
 {
+	this.setPosition(this.getPosition()-Vec2f(0,24));
 	this.getSprite().SetZ(-50.0f);
 
 	this.CreateRespawnPoint("spawn", Vec2f(0.0f, -4.0f));

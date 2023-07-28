@@ -58,13 +58,13 @@ namespace map_colors
 		tile_snow_ground_back  = 0xFF8a9d9e,
 		tile_snow              = 0xFFaffaff,
 
-		tile_snow_pile         = 0xFFaafaff, // biggest
+		tile_snow_pile         = 0xFFfafaff, // biggest
 		tile_snow_pile_v0      = 0xFF9ee9ee, 
 		tile_snow_pile_v1      = 0xFF7cc7cc,
 		tile_snow_pile_v2      = 0xFF5aa5aa,
-		tile_snow_pile_v3      = 0xFFa5a5ff,
-		tile_snow_pile_v4      = 0xFF5585aa,
-		tile_snow_pile_v5      = 0xFF456590, // smallest
+		tile_snow_pile_v3      = 0xFF4a9297,
+		tile_snow_pile_v4      = 0xFF377478,
+		tile_snow_pile_v5      = 0xFF295d61, // smallest
 
 		tile_ice               = 0xFF4070f1,
 		tile_snow_bricks       = 0xFFc9c9c9,
