@@ -468,17 +468,20 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_snow_bricks_d0:
 			case CMap::tile_snow_bricks_d1:
 				map.SetTileSupport(index, 8);
-				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
-				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				break;
 
 			case CMap::tile_bsnow_bricks:
+				map.SetTileSupport(index, 8);
 				if(isClient())
 				{
 					int add = index % 6;
 					if (add % 3 == 0) map.AddTileFlag(index, Tile::MIRROR);
 					if (add % 2 == 0) map.AddTileFlag(index, Tile::FLIP);
 				}
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 			case CMap::tile_bsnow_bricks_d0:
 			case CMap::tile_bsnow_bricks_d1:
 				map.SetTileSupport(index, 8);
