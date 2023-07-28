@@ -164,7 +164,14 @@ namespace CMap
 		tile_ice_d0 = tile_ice + 16,
 		tile_ice_d1,
 		tile_ice_d2,
-		tile_ice_d3
+		tile_ice_d3,
+
+		tile_snow_bricks = tile_ice + 32,
+		tile_snow_bricks_d0,
+		tile_snow_bricks_d1,
+		tile_bsnow_bricks = tile_snow_bricks + 3,
+		tile_bsnow_bricks_d0,
+		tile_bsnow_bricks_d1
 	};
 };
 
@@ -257,4 +264,14 @@ bool isBackGlassTile(CMap@ map, Vec2f pos) // required for getMask function
 {
 	u16 tile = map.getTile(pos).type;
 	return tile >= CMap::tile_bglass && tile <= CMap::tile_bglass_v14;
+}
+
+bool isTileSnowBricks(u32 index)
+{
+	return index >= CMap::tile_snow_bricks && index <= CMap::tile_snow_bricks_d1;
+}
+
+bool isTileBackSnowBricks(u32 index)
+{
+	return index >= CMap::tile_bsnow_bricks && index <= CMap::tile_bsnow_bricks_d1;
 }

@@ -16,7 +16,7 @@ const Vec2f[] directions =
 bool onMapTileCollapse(CMap@ map, u32 offset)
 {
 	Tile tile = map.getTile(offset);
-	if(isDummyTile(tile.type))
+	if (isDummyTile(tile.type))
 	{
 		CBlob@ blob = getBlobByNetworkID(server_getDummyGridNetworkID(offset));
 		if(blob !is null)
@@ -25,11 +25,10 @@ bool onMapTileCollapse(CMap@ map, u32 offset)
 		}
 	}
 	else if (isTileSnow(tile.type) || isTileSnowPile(tile.type))
-	{
+	{ 	
 		CBlob@ blob = getBlobByNetworkID(server_getDummyGridNetworkID(offset));
 		if (blob !is null)
 		{
-			printf("e");
 			blob.server_Die();
 		}
 	}
@@ -112,6 +111,48 @@ TileType server_onTileHit(CMap@ map, f32 damage, u32 index, TileType oldTileType
 
 			case CMap::tile_ice_d3:
 				return CMap::tile_ground_back;
+
+			// snow bricks
+			case CMap::tile_snow_bricks:
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+
+				map.server_SetTile(pos, CMap::tile_snow_bricks_d0);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+
+				return CMap::tile_snow_bricks_d0;
+			}
+			case CMap::tile_snow_bricks_d0:
+			{
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+
+				return CMap::tile_snow_bricks_d1;
+			}
+			case CMap::tile_snow_bricks_d1:
+				return CMap::tile_empty;
+
+			// back snow bricks
+			case CMap::tile_bsnow_bricks:
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+
+				map.server_SetTile(pos, CMap::tile_bsnow_bricks_d0);
+				map.AddTileFlag(index, Tile::LIGHT_PASSES | Tile::BACKGROUND | Tile::WATER_PASSES);
+				map.RemoveTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_SOURCE);
+
+				return CMap::tile_bsnow_bricks_d0;
+			}
+			case CMap::tile_bsnow_bricks_d0:
+			{
+				map.AddTileFlag(index, Tile::LIGHT_PASSES | Tile::BACKGROUND | Tile::WATER_PASSES);
+				map.RemoveTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_SOURCE);
+
+				return CMap::tile_bsnow_bricks_d1;
+			}
+			case CMap::tile_bsnow_bricks_d1:
+				return CMap::tile_empty;
 
 			// steel
 			case CMap::tile_steel:
@@ -346,7 +387,9 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 		case CMap::tile_empty:
 		case CMap::tile_ground_back:
 		{
-			if (tile_old == CMap::tile_snow_d3 || tile_old == CMap::tile_snow_pile_v4 || tile_old == CMap::tile_snow_pile_v5)
+			if (tile_old == CMap::tile_snow_d3 || tile_old == CMap::tile_snow_bricks_d1
+				|| tile_old == CMap::tile_bsnow_bricks_d1 || tile_old == CMap::tile_snow_pile_v4
+					|| tile_old == CMap::tile_snow_pile_v5)
 				OnSnowTileDestroyed(map, index);
 			else if (tile_old == CMap::tile_ice_d3)
 				OnIceTileDestroyed(map, index);
@@ -379,7 +422,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 					if (add > 0)
 					map.SetTile(index, CMap::tile_snow + add);
 				}
-				map.SetTileSupport(index, 0);
+				map.SetTileSupport(index, 1);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				break;
@@ -390,7 +433,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_snow_v3:
 			case CMap::tile_snow_v4:
 			case CMap::tile_snow_v5:
-				map.SetTileSupport(index, 0);
+				map.SetTileSupport(index, 1);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				break;
@@ -399,7 +442,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_snow_d1:
 			case CMap::tile_snow_d2:
 			case CMap::tile_snow_d3:
-				map.SetTileSupport(index, 0);
+				map.SetTileSupport(index, 1);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				if(isClient()) OnSnowTileHit(map, index);
@@ -421,13 +464,37 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				map.RemoveTileFlag(index, Tile::SOLID | Tile::COLLISION);
 				break;
 
+			case CMap::tile_snow_bricks:
+			case CMap::tile_snow_bricks_d0:
+			case CMap::tile_snow_bricks_d1:
+				map.SetTileSupport(index, 8);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				break;
+
+			case CMap::tile_bsnow_bricks:
+				if(isClient())
+				{
+					int add = index % 6;
+					if (add % 3 == 0) map.AddTileFlag(index, Tile::MIRROR);
+					if (add % 2 == 0) map.AddTileFlag(index, Tile::FLIP);
+				}
+			case CMap::tile_bsnow_bricks_d0:
+			case CMap::tile_bsnow_bricks_d1:
+				map.SetTileSupport(index, 8);
+				map.AddTileFlag(index, Tile::LIGHT_PASSES | Tile::BACKGROUND | Tile::WATER_PASSES);
+				map.RemoveTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_SOURCE);
+				break;
+
 			case CMap::tile_ice:
 			{
 				Vec2f pos = map.getTileWorldPosition(index);
 
 				ice_SetTile(map, pos);
-				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-				map.RemoveTileFlag( index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				//map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				//map.RemoveTileFlag( index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag( index, Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
 				break;
 			}
@@ -789,7 +856,7 @@ void OnIceTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("PickStone" + (1 + XORRandom(3)), pos, 1.0f, 0.95f);
+		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.25f);
 		sparks(pos, 1, 1);
 	}
 }
@@ -800,7 +867,7 @@ void OnIceTileDestroyed(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("destroy_wall.ogg", pos, 1.0f, 0.9f);
+		Sound::Play("GlassBreak1.ogg", pos, 1.0f, 0.85f);
 	}
 }
 

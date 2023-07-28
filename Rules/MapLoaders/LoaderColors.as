@@ -54,7 +54,10 @@ namespace map_colors
 	enum color
 	{
 		// CUSTOM
+		tile_snow_ground       = 0xFFc0d4d4, // just ground, but with white pixel
+		tile_snow_ground_back  = 0xFF8a9d9e,
 		tile_snow              = 0xFFaffaff,
+
 		tile_snow_pile         = 0xFFaafaff, // biggest
 		tile_snow_pile_v0      = 0xFF9ee9ee, 
 		tile_snow_pile_v1      = 0xFF7cc7cc,
@@ -62,7 +65,10 @@ namespace map_colors
 		tile_snow_pile_v3      = 0xFFa5a5ff,
 		tile_snow_pile_v4      = 0xFF5585aa,
 		tile_snow_pile_v5      = 0xFF456590, // smallest
+
 		tile_ice               = 0xFF4070f1,
+		tile_snow_bricks       = 0xFFc9c9c9,
+		tile_bsnow_bricks      = 0xFFb2b2b2,
 
 		tile_steel             = 0xFF25459c,
 		tile_bsteel            = 0xFF25335c,
