@@ -158,7 +158,7 @@ void PositionCarried(CBlob@ this, CBlob@ carryBlob)
 	}
 	else
 	{
-		if (!carryBlob.hasTag("place norotate"))
+		if (carryBlob.hasTag("place") && !carryBlob.hasTag("place norotate"))
 		{
 			carryBlob.setAngleDegrees(0.0f);
 		}

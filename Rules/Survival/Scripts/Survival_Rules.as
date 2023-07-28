@@ -4,7 +4,7 @@
 #define SERVER_ONLY
 
 const u16 day_speed = 10; // the more the value, the slower it is going
-const u16 night_speed = 30;
+const u16 night_speed = 45;
 
 #include "CTF_Structs.as";
 #include "RulesCore.as";
