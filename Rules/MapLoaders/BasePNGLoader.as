@@ -234,6 +234,7 @@ class PNGLoader
 			
 			case map_colors::locker:     			spawnBlob(map, "locker", offset); break;
 			case map_colors::barrel:     			spawnBlob(map, "barrel", offset); break;
+			case map_colors::trashcontainer:     	spawnBlob(map, "trashcontainer", offset); break;
 
 			// Tiles
 			case map_colors::tile_ground:           map.SetTile(offset, CMap::tile_ground);           break;

@@ -56,12 +56,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		bool sync = params.read_bool();
 		if (isServer() && !sync)
 		{
-			CBitStream params1;
-			params1.write_bool(true);
-			params1.write_f32(this.get_f32("level"));
-			params1.write_f32(this.get_f32("level_increase"));
-			params1.write_f32(this.getTimeToDie());
-			this.SendCommand(this.getCommandID("sync"), params1);
+			CBitStream params;
+			params.write_bool(true);
+			params.write_f32(this.get_f32("level"));
+			params.write_f32(this.get_f32("level_increase"));
+			params.write_f32(this.getTimeToDie());
+			this.SendCommand(this.getCommandID("sync"), params);
 		}
 		if (isClient() && sync)
 		{

@@ -9,9 +9,8 @@ const string[] anims = {
 
 void onInit(CSprite@ this)
 {
-	// Building
 	CBlob@ blob = this.getBlob();
-	this.SetZ(-50); //-60 instead of -50 so sprite layers are behind ladders
+	this.SetZ(-50);
 
 	blob.addCommandID("sync");
 	// TODO: share randomprops (except seed) to nearby lockers
@@ -25,7 +24,7 @@ void onInit(CSprite@ this)
 	if (getLocalPlayer() !is null && getLocalPlayer().isMyPlayer())
 	{
 		CBitStream params;
-		params.write_bool(false);
+		params.write_bool(true);
 		blob.SendCommand(blob.getCommandID("sync"));
 	}
 }
@@ -35,10 +34,10 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	if (cmd == this.getCommandID("sync"))
 	{
 		bool init = params.read_bool();
-		if (isServer() && !init)
+		if (init && isServer())
 		{
 			CBitStream params;
-			params.write_bool(true);
+			params.write_bool(false);
 			params.write_u8(this.get_u8("anim"));
 			params.write_u8(this.get_u8("frame")); // amount of frames here, since its serverside you gotta do it manually
 			params.write_u32(this.get_u32("seed")); // seed for spritelayers
@@ -46,13 +45,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
 			return;
 		}
-		if (isClient() && init)
+		if (!init && isClient())
 		{
 			u8 anim = params.read_u8();
 			u8 frame = params.read_u8();
 			u32 seed = params.read_u32();
 
-			if (anim >= anims.length) return;
+			if (anim > anims.length) return;
 
 			CSprite@ sprite = this.getSprite();
 			if (sprite is null) return;
