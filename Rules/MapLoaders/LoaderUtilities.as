@@ -492,9 +492,9 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 
 				ice_SetTile(map, pos);
 				//map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-				//map.RemoveTileFlag( index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				//map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
-				map.RemoveTileFlag( index, Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.RemoveTileFlag(index, Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
 				break;
 			}
@@ -534,7 +534,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 
 				steel_SetTile(map, pos);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-				map.RemoveTileFlag( index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
 				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 1.1f);
 
@@ -661,7 +661,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				Vec2f pos = map.getTileWorldPosition(index);
 
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-				map.RemoveTileFlag( index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
 				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 1.1f);
 
@@ -700,7 +700,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 
 				polishedstone_SetTile(map, pos);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-				map.RemoveTileFlag( index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
 				if (isClient()) Sound::Play("build_wall.ogg", map.getTileWorldPosition(index), 1.0f, 0.925f);
 
@@ -850,13 +850,13 @@ void ice_Update(CMap@ map, Vec2f pos)
 void OnIceTileHit(CMap@ map, u32 index)
 {
 	map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-	map.RemoveTileFlag( index, Tile::LIGHT_PASSES );
+	map.RemoveTileFlag(index, Tile::LIGHT_PASSES);
 
 	if (isClient())
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.25f);
+		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.1f);
 		sparks(pos, 1, 1);
 	}
 }
@@ -867,7 +867,7 @@ void OnIceTileDestroyed(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("GlassBreak1.ogg", pos, 1.0f, 0.85f);
+		Sound::Play("GlassBreak1.ogg", pos, 1.0f, 0.75f);
 	}
 }
 
@@ -903,7 +903,7 @@ void steel_Update(CMap@ map, Vec2f pos)
 void OnSteelTileHit(CMap@ map, u32 index)
 {
 	map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-	map.RemoveTileFlag( index, Tile::LIGHT_PASSES );
+	map.RemoveTileFlag(index, Tile::LIGHT_PASSES);
 
 	if (isClient())
 	{
@@ -978,7 +978,7 @@ void elderbrick_SetTile(CMap@ map, Vec2f pos)
 void OnElderBrickTileHit(CMap@ map, u32 index)
 {
 	map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-	map.RemoveTileFlag( index, Tile::LIGHT_PASSES );
+	map.RemoveTileFlag(index, Tile::LIGHT_PASSES);
 
 	if (isClient())
 	{
@@ -1031,7 +1031,7 @@ void polishedstone_Update(CMap@ map, Vec2f pos)
 void OnPolishedStoneTileHit(CMap@ map, u32 index)
 {
 	map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-	map.RemoveTileFlag( index, Tile::LIGHT_PASSES );
+	map.RemoveTileFlag(index, Tile::LIGHT_PASSES);
 
 	if (isClient())
 	{
