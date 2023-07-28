@@ -6,6 +6,21 @@ void onInit(CBlob@ this)
 	this.inventoryButtonPos = Vec2f(0, 0);
 	this.getCurrentScript().tickFrequency = 90;
 	this.SetFacingLeft(XORRandom(100) < 50);
+
+	this.addCommandID("sync");
+
+	if (isServer())
+	{
+		this.set_u8("anim", XORRandom(anims.length));
+		this.set_u8("frame", XORRandom(8));
+	}
+
+	if (isClient())
+	{
+		CBitStream params;
+		params.write_bool(true);
+		this.SendCommand(this.getCommandID("sync"), params);
+	}
 }
 
 bool isInventoryAccessible(CBlob@ this, CBlob@ forBlob)
@@ -15,7 +30,7 @@ bool isInventoryAccessible(CBlob@ this, CBlob@ forBlob)
 
 bool doesCollideWithBlob(CBlob@ this, CBlob@ blob)
 {
-	return blob.isCollidable() && !blob.hasTag("flesh");
+	return blob.isCollidable();
 }
 
 void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
@@ -34,29 +49,15 @@ void onInit(CSprite@ this)
 	// Building
 	CBlob@ blob = this.getBlob();
 	this.SetZ(-25); 
-
-	blob.addCommandID("sync");
-
-	if (isServer())
-	{
-		blob.set_u8("anim", XORRandom(anims.length));
-		blob.set_u8("frame", XORRandom(8));
-	}
-
-	if (getLocalPlayer() !is null && getLocalPlayer().isMyPlayer())
-	{
-		CBitStream params;
-		params.write_bool(true);
-		blob.SendCommand(blob.getCommandID("sync"));
-	}
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("sync"))
 	{
-		bool init = params.read_bool();
-		printf(""+init);
+		bool init;
+		if (!params.saferead_bool(init)) return;
+
 		if (init && isServer())
 		{
 			CBitStream params;
@@ -106,6 +107,6 @@ void VaryVisuals(CSprite@ this, u8 anim, u8 frame)
 	
 	if (blob.getShape() !is null && this.animation.frame > 3)
 	{
-		blob.getShape().setFriction(1.2);
+		blob.getShape().setFriction(0.8);
 	}
 }

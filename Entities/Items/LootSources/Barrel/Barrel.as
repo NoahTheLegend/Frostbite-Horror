@@ -8,6 +8,21 @@ void onInit(CBlob@ this)
 
 	this.Tag("heavy weight");
 	this.SetFacingLeft(XORRandom(100) < 50);
+
+	this.addCommandID("sync");
+
+	if (isServer())
+	{
+		this.set_u8("anim", XORRandom(anims.length));
+		this.set_u8("frame", XORRandom(10));
+	}
+
+	if (isClient())
+	{
+		CBitStream params;
+		params.write_bool(true);
+		this.SendCommand(this.getCommandID("sync"), params);
+	}
 }
 
 bool isInventoryAccessible(CBlob@ this, CBlob@ forBlob)
@@ -42,28 +57,15 @@ void onInit(CSprite@ this)
 	// Building
 	CBlob@ blob = this.getBlob();
 	this.SetZ(-20); 
-
-	blob.addCommandID("sync");
-
-	if (isServer())
-	{
-		blob.set_u8("anim", XORRandom(anims.length));
-		blob.set_u8("frame", XORRandom(10));
-	}
-
-	if (getLocalPlayer() !is null && getLocalPlayer().isMyPlayer())
-	{
-		CBitStream params;
-		params.write_bool(true);
-		blob.SendCommand(blob.getCommandID("sync"));
-	}
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("sync"))
 	{
-		bool init = params.read_bool();
+		bool init;
+		if (!params.saferead_bool(init)) return;
+		
 		if (init && isServer())
 		{
 			CBitStream params;

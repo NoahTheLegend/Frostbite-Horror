@@ -41,7 +41,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("sync"))
 	{
-		bool init = params.read_bool();
+		bool init;
+		if (!params.saferead_bool(init)) return;
 		if (init && isServer())
 		{
 			u16 id = params.read_u16();

@@ -11,21 +11,29 @@ void onInit(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
 	this.SetZ(-50);
+}
 
-	blob.addCommandID("sync");
+void onInit(CBlob@ this)
+{
+	this.getShape().getConsts().mapCollisions = false;
+	AddIconToken("$store_inventory$", "InteractionIcons.png", Vec2f(32, 32), 28);
+	this.inventoryButtonPos = Vec2f(0, 0);
+	this.getCurrentScript().tickFrequency = 60;
+
+	this.addCommandID("sync");
 	// TODO: share randomprops (except seed) to nearby lockers
 	if (isServer())
 	{
-		blob.set_u8("anim", XORRandom(anims.length));
-		blob.set_u8("frame", XORRandom(12));
-		blob.set_u32("seed", XORRandom(696969));
+		this.set_u8("anim", XORRandom(anims.length));
+		this.set_u8("frame", XORRandom(12));
+		this.set_u32("seed", XORRandom(696969));
 	}
 
-	if (getLocalPlayer() !is null && getLocalPlayer().isMyPlayer())
+	if (isClient())
 	{
 		CBitStream params;
 		params.write_bool(true);
-		blob.SendCommand(blob.getCommandID("sync"));
+		this.SendCommand(this.getCommandID("sync"), params);
 	}
 }
 
@@ -33,7 +41,9 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
 	if (cmd == this.getCommandID("sync"))
 	{
-		bool init = params.read_bool();
+		bool init;
+		if (!params.saferead_bool(init)) return;
+		
 		if (init && isServer())
 		{
 			CBitStream params;
@@ -115,13 +125,6 @@ Vec2f getStickerOffset(u8 i, u32 seed)
 	return Vec2f((Maths::Pow(seed, i+1)%15-7.5f)/8, Maths::Pow(seed, i+1)%4-4)*2;
 }
 */
-void onInit(CBlob@ this)
-{
-	this.getShape().getConsts().mapCollisions = false;
-	AddIconToken("$store_inventory$", "InteractionIcons.png", Vec2f(32, 32), 28);
-	this.inventoryButtonPos = Vec2f(0, 0);
-	this.getCurrentScript().tickFrequency = 60;
-}
 
 bool isInventoryAccessible(CBlob@ this, CBlob@ forBlob)
 {
