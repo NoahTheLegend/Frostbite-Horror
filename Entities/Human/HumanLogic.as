@@ -91,8 +91,25 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 
 }
 
+void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
+{
+	if (attached !is null && attached.getName() == "human"
+		&& attached.hasTag("dead") && attached.getSprite() !is null)
+	{
+		attached.getSprite().SetRelativeZ(-5.0f);
+		attached.setAngleDegrees(this.isFacingLeft()?90:-90);
+	}
+}
+
 void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint)
 {
+	if (detached !is null && detached.getName() == "human"
+		&& detached.hasTag("dead") && detached.getSprite() !is null)
+	{
+		detached.getSprite().SetRelativeZ(0.0f);
+		detached.setAngleDegrees(0);
+	}
+
 	// ignore collision for built blob
 	BuildBlock[][]@ blocks;
 	if (!this.get("blocks", @blocks))
@@ -166,3 +183,4 @@ void onAddToInventory(CBlob@ this, CBlob@ blob)
 		blob.Untag("temp blob");
 	}
 }
+

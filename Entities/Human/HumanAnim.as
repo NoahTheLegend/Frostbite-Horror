@@ -13,6 +13,7 @@ void onInit(CSprite@ this)
 	LoadSprites(this);
 
 	this.getCurrentScript().runFlags |= Script::tick_not_infire;
+	this.SetZ(0.0f);
 }
 
 void onPlayerInfoChanged(CSprite@ this)
