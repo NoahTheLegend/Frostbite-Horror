@@ -22,6 +22,8 @@ void onInit(CBlob@ this)
 	HitData hitdata;
 	this.set("hitdata", hitdata);
 
+	this.Tag("heavy weight");
+
 	CShape@ shape = this.getShape();
 	shape.SetRotationsAllowed(false);
 	shape.getConsts().net_threshold_multiplier = 0.5f;
@@ -97,7 +99,10 @@ void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint)
 		&& attached.hasTag("dead") && attached.getSprite() !is null)
 	{
 		attached.getSprite().SetRelativeZ(-5.0f);
-		attached.setAngleDegrees(this.isFacingLeft()?90:-90);
+		if (attached.getSprite().getSpriteLayer("head") !is null)
+		{
+			attached.getSprite().getSpriteLayer("head").SetRelativeZ(-4.0f);
+		}
 	}
 }
 
@@ -107,7 +112,10 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ attachedPoint)
 		&& detached.hasTag("dead") && detached.getSprite() !is null)
 	{
 		detached.getSprite().SetRelativeZ(0.0f);
-		detached.setAngleDegrees(0);
+		if (detached.getSprite().getSpriteLayer("head") !is null)
+		{
+			detached.getSprite().getSpriteLayer("head").SetRelativeZ(1.0f);
+		}
 	}
 
 	// ignore collision for built blob

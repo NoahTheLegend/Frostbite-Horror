@@ -84,7 +84,7 @@ void onDie(CBlob@ this)
 
 f32 getAimAngle(CBlob@ this, CBlob@ holder)
 {
-	Vec2f aimvector = holder.getAimPos() - Vec2f(0,16) - (this.hasTag("place45") /*&& this.hasTag("a1"))*/ ? holder.getInterpolatedPosition() : this.getInterpolatedPosition());
+	Vec2f aimvector = holder.getAimPos() - (this.hasTag("place45") /*&& this.hasTag("a1"))*/ ? holder.getInterpolatedPosition() : this.getInterpolatedPosition());
 	f32 angle = holder.isFacingLeft() ? -aimvector.Angle() + 180.0f : -aimvector.Angle();
 	if (holder.isAttached()) this.SetFacingLeft(holder.isFacingLeft());
 	return angle;

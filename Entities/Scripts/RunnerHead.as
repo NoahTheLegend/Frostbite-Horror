@@ -239,7 +239,7 @@ void onTick(CSprite@ this)
 		else
 		{
 			head.SetVisible(this.isVisible());
-			head.SetRelativeZ(blob.isAttached() ? -1.0f : layer * 0.25f);
+			head.SetRelativeZ(blob.isAttached() ? -5.1f : layer * 0.25f);
 		}
 
 		offset = head_offset;

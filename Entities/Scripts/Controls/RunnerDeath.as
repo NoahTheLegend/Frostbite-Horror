@@ -101,10 +101,10 @@ f32 onHit(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, CBlob@ hitt
         if (carried !is null)
         {
             Vec2f current_vel = this.getVelocity() * CARRIED_BLOB_VEL_SCALE;
-            if (carried.hasTag("medium weight"))
-                current_vel = current_vel * MEDIUM_CARRIED_BLOB_VEL_SCALE;
-            else if (carried.hasTag("heavy weight"))
+            if (carried.hasTag("heavy weight"))
                 current_vel = current_vel * HEAVY_CARRIED_BLOB_VEL_SCALE;
+			else if (carried.hasTag("medium weight"))
+                current_vel = current_vel * MEDIUM_CARRIED_BLOB_VEL_SCALE;
             //the item is detatched from the player before setting the velocity
             //otherwise it wont go anywhere
             this.server_DetachFrom(carried);

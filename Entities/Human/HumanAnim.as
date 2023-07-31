@@ -33,20 +33,27 @@ void onTick(CSprite@ this)
 
 	if (blob.hasTag("dead"))
 	{
-		this.SetAnimation("dead");
-		Vec2f vel = blob.getVelocity();
-
-		if (vel.y < -1.0f)
+		if (blob.isAttached())
 		{
-			this.SetFrameIndex(0);
-		}
-		else if (vel.y > 1.0f)
-		{
-			this.SetFrameIndex(2);
+			this.SetAnimation("deadattached");
 		}
 		else
 		{
-			this.SetFrameIndex(1);
+			this.SetAnimation("dead");
+			Vec2f vel = blob.getVelocity();
+
+			if (vel.y < -1.0f)
+			{
+				this.SetFrameIndex(0);
+			}
+			else if (vel.y > 1.0f)
+			{
+				this.SetFrameIndex(2);
+			}
+			else
+			{
+				this.SetFrameIndex(1);
+			}
 		}
 		return;
 	}

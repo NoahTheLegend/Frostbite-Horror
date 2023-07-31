@@ -96,7 +96,7 @@ void MakeBlocksMenu(CInventory@ this, const Vec2f &in INVENTORY_CE)
 
 	const Vec2f MENU_CE = Vec2f(0, MENU_SIZE.y * -GRID_SIZE - GRID_PADDING) + INVENTORY_CE;
 
-	CGridMenu@ menu = CreateGridMenu(MENU_CE, blob, MENU_SIZE, getTranslatedString("Build"));
+	CGridMenu@ menu = CreateGridMenu(MENU_CE, blob, MENU_SIZE, "Recipes");
 	if (menu !is null)
 	{
 		menu.deleteAfterClick = false;
