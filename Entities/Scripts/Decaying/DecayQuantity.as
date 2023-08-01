@@ -5,7 +5,7 @@
 // define the quantity that should be
 // discarded each step
 
-const uint16 FREQUENCY = 2000;
+const uint16 FREQUENCY = 3000;
 const uint16 QUICK_FREQUENCY = 30;
 const uint16 QUARTER = FREQUENCY / 4;
 

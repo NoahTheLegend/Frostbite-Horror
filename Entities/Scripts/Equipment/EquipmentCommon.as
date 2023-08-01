@@ -49,14 +49,6 @@ void addTorso(CBlob@ playerblob, string torsoname)			//The same stuff as in head
 	playerblob.set_string("equipment_torso", torsoname);
 }
 
-void add2Torso(CBlob@ playerblob, string torsoname)			//The same stuff as in head here.
-{
-	playerblob.Tag(torsoname);
-	playerblob.set_string("reload_script", torsoname);
-	playerblob.AddScript(torsoname+"_effect.as");
-	playerblob.set_string("equipment2_torso", torsoname);
-}
-
 void removeTorso(CBlob@ playerblob, string torsoname)		//Same stuff with removing again.
 {
 	if (torsoname == "suicidevest" && playerblob.hasTag("exploding")) return;
@@ -79,31 +71,6 @@ void removeTorso(CBlob@ playerblob, string torsoname)		//Same stuff with removin
 	}
 	
 	playerblob.set_string("equipment_torso", "");
-	playerblob.RemoveScript(torsoname+"_effect.as");
-}
-
-void remove2Torso(CBlob@ playerblob, string torsoname)		//Same stuff with removing again.
-{
-	if (torsoname == "suicidevest" && playerblob.hasTag("exploding")) return;
-	if (playerblob.getSprite().getSpriteLayer(torsoname) !is null)
-        playerblob.getSprite().RemoveSpriteLayer(torsoname);
-
-	if (torsoname == "backpack")
-	{
-		CBlob@ backpackblob = getBlobByNetworkID(playerblob.get_u16("backpack_id"));
-		if (backpackblob !is null) backpackblob.server_Die();
-	}
-
-	playerblob.Untag(torsoname);
-	if (isServer())
-	{
-		CBlob@ oldeq = server_CreateBlob(torsoname, playerblob.getTeamNum(), playerblob.getPosition());
-		if (torsoname == "default") 
-			oldeq.set_f32("health", playerblob.get_f32(torsoname+"_health"));
-		playerblob.server_PutInInventory(oldeq);
-	}
-	
-	playerblob.set_string("equipment2_torso", "");
 	playerblob.RemoveScript(torsoname+"_effect.as");
 }
 

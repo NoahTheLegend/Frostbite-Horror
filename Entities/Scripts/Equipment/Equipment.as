@@ -9,8 +9,8 @@ void onInit(CBlob@ this)
 
 	this.addCommandID("equip_head");
 	this.addCommandID("equip_torso");
-	this.addCommandID("equip2_torso");
 	this.addCommandID("equip_boots");
+	this.addCommandID("none");
 }
 
 void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
@@ -20,39 +20,43 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 
 	Vec2f MENU_POS = gridmenu.getUpperLeftPosition() + Vec2f(-96, 72);
 
-	CGridMenu@ equipments = CreateGridMenu(MENU_POS, this, Vec2f(1, 3), "equipment");
-	CGridMenu@ extraequipments = CreateGridMenu(MENU_POS+Vec2f(48, 0), this, Vec2f(1, 1), "equipment");
+	CGridMenu@ equipments = CreateGridMenu(MENU_POS+Vec2f(48, 0), this, Vec2f(1, 3), "equipment");
+	CGridMenu@ extraequipments = CreateGridMenu(MENU_POS+Vec2f(0, 0), this, Vec2f(1, 3), "equipment");
 
-	string HeadImage = "Equipment.png";
-	string TorsoImage = "Equipment.png";
-	string Torso2Image = "Equipment.png";
-	string BootsImage = "Equipment.png";
+	int HeadFrame = 3;
+	int TorsoFrame = 4;
+	int BootsFrame = 5;
 
-	int HeadFrame = 0;
-	int TorsoFrame = 1;
-	int Torso2Frame = 1;
-	int BootsFrame = 2;
+	string img  = "Equipment.png";
+	string himg = "Equipment.png";
+	string timg = "Equipment.png";
+	string bimg = "Equipment.png";
 
 	if (this.get_string("equipment_head") != "")
 	{
-		HeadImage = this.get_string("equipment_head")+"_icon.png";
-		HeadFrame = 0;
+		himg = this.get_string("equipment_head")+"_icon.png";
+		HeadFrame = 3;
 	}
 	if (this.get_string("equipment_torso") != "")
 	{
-		TorsoImage = this.get_string("equipment_torso")+"_icon.png";
-		TorsoFrame = 0;
-	}
-	if (this.get_string("equipment2_torso") != "")
-	{
-		Torso2Image = this.get_string("equipment2_torso")+"_icon.png";
-		Torso2Frame = 0;
+		timg = this.get_string("equipment_torso")+"_icon.png";
+		TorsoFrame = 4;
 	}
 	if (this.get_string("equipment_boots") != "")
 	{
-		BootsImage = this.get_string("equipment_boots")+"_icon.png";
-		BootsFrame = 0;
+		bimg = this.get_string("equipment_boots")+"_icon.png";
+		BootsFrame = 5;
 	}
+
+	int teamnum = this.getTeamNum();
+	if (teamnum > 6) teamnum = 7;
+
+	AddIconToken("$headimage$", 	   himg, Vec2f(24, 24), 3, teamnum);
+	AddIconToken("$torsoimage$",	   timg, Vec2f(24, 24), 4, teamnum);
+	AddIconToken("$bootsimage$",	   bimg, Vec2f(24, 24), 5, teamnum);
+	AddIconToken("$decor_headimage$",  img, Vec2f(24, 24), 0, teamnum);
+	AddIconToken("$decor_torsoimage$", img, Vec2f(24, 24), 1, teamnum);
+	AddIconToken("$decor_bootsimage$", img, Vec2f(24, 24), 2, teamnum);
 
 	if (equipments !is null)
 	{
@@ -64,31 +68,25 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 			CBitStream params;
 			params.write_u16(this.getNetworkID());
 
-			int teamnum = this.getTeamNum();
-			if (teamnum > 6) teamnum = 7;
-			AddIconToken("$headimage$", HeadImage, Vec2f(24, 24), HeadFrame, teamnum);
-			AddIconToken("$torsoimage$", TorsoImage, Vec2f(24, 24), TorsoFrame, teamnum);
-			AddIconToken("$bootsimage$", BootsImage, Vec2f(24, 24), BootsFrame, teamnum);
-
-			CGridButton@ head = equipments.AddButton("$headimage$", "", this.getCommandID("equip_head"), Vec2f(1, 1), params);
-			if (head !is null)
+			CGridButton@ head_util = equipments.AddButton("$headimage$", "", this.getCommandID("equip_head"), Vec2f(1, 1), params);
+			if (head_util !is null)
 			{
-				if (this.get_string("equipment_head") != "") head.SetHoverText("Unequip head gear\n");
-				else head.SetHoverText("Equip head gear\n");
+				if (this.get_string("equipment_head") != "") head_util.SetHoverText("Unequip head gear\n");
+				else head_util.SetHoverText("Equip head gear\n");
 			}
 
-			CGridButton@ torso = equipments.AddButton("$torsoimage$", "", this.getCommandID("equip_torso"), Vec2f(1, 1), params);
-			if (torso !is null)
+			CGridButton@ torso_util = equipments.AddButton("$torsoimage$", "", this.getCommandID("equip_torso"), Vec2f(1, 1), params);
+			if (torso_util !is null)
 			{
-				if (this.get_string("equipment_torso") != "") torso.SetHoverText("Unequip snow suit\n");
-				else torso.SetHoverText("Equip snow suit\n");
+				if (this.get_string("equipment_torso") != "") torso_util.SetHoverText("Unequip torso utility\n");
+				else torso_util.SetHoverText("Equip torso utility\n");
 			}
 
-			CGridButton@ boots = equipments.AddButton("$bootsimage$", "", this.getCommandID("equip_boots"), Vec2f(1, 1), params);
-			if (boots !is null)
+			CGridButton@ boots_util = equipments.AddButton("$bootsimage$", "", this.getCommandID("equip_boots"), Vec2f(1, 1), params);
+			if (boots_util !is null)
 			{
-				if (this.get_string("equipment_boots") != "") boots.SetHoverText("Unequip boots\n");
-				else boots.SetHoverText("Equip boots\n");
+				if (this.get_string("equipment_boots") != "") boots_util.SetHoverText("Unequip boots utility\n");
+				else boots_util.SetHoverText("Equip boots utility\n");
 			}
 		}
 	}
@@ -97,20 +95,26 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 		extraequipments.SetCaptionEnabled(false);
 		extraequipments.deleteAfterClick = false;
 
+		CBitStream params;
+
 		if (this !is null)
 		{
-			CBitStream params;
-			params.write_u16(this.getNetworkID());
+			CGridButton@ head = extraequipments.AddButton("$decor_headimage$", "", this.getCommandID("none"), Vec2f(1, 1), params);
+			if (head !is null)
+			{
+				head.SetHoverText("Hood\n");
+			}
 
-			int teamnum = this.getTeamNum();
-			if (teamnum > 6) teamnum = 7;
-			AddIconToken("$torsoimage$", Torso2Image, Vec2f(24, 24), TorsoFrame, teamnum);
-
-			CGridButton@ torso = extraequipments.AddButton("$torsoimage$", "", this.getCommandID("equip2_torso"), Vec2f(1, 1), params);
+			CGridButton@ torso = extraequipments.AddButton("$decor_torsoimage$", "", this.getCommandID("none"), Vec2f(1, 1), params);
 			if (torso !is null)
 			{
-				if (this.get_string("equipment2_torso") != "") torso.SetHoverText("Unequip backpack\n");
-				else torso.SetHoverText("Equip backpack\n");
+				torso.SetHoverText("Snow suit\n");
+			}
+
+			CGridButton@ boots = extraequipments.AddButton("$decor_bootsimage$", "", this.getCommandID("none"), Vec2f(1, 1), params);
+			if (boots !is null)
+			{
+				boots.SetHoverText("Warm boots\n");
 			}
 		}
 	}
@@ -118,7 +122,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 {
-	if (cmd == this.getCommandID("equip_head") || cmd == this.getCommandID("equip_torso") || cmd == this.getCommandID("equip2_torso") || cmd == this.getCommandID("equip_boots"))
+	if (cmd == this.getCommandID("equip_head") || cmd == this.getCommandID("equip_torso") || cmd == this.getCommandID("equip_boots"))
 	{
 		if (getGameTime() < this.get_u32("equipment_delay")) return;
 		this.set_u32("equipment_delay", getGameTime()+5);
@@ -129,8 +133,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		if (caller is null) return;
 		if (caller.get_string("equipment_torso") != "" && cmd == this.getCommandID("equip_torso"))
 			removeTorso(caller, caller.get_string("equipment_torso"));
-		else if (caller.get_string("equipment2_torso") != "" && cmd == this.getCommandID("equip2_torso"))
-			remove2Torso(caller, caller.get_string("equipment2_torso"));
 		else if (caller.get_string("equipment_boots") != "" && cmd == this.getCommandID("equip_boots"))
 			removeBoots(caller, caller.get_string("equipment_boots"));
 		else if (caller.get_string("equipment_head") != "" && cmd == this.getCommandID("equip_head"))
@@ -156,13 +158,6 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 					caller.set_f32(eqName+"_health", item.get_f32("health"));
 				item.server_Die();
 			}
-			else if (getEquipmentType(item) == "torso" && cmd == this.getCommandID("equip2_torso"))
-			{
-				add2Torso(caller, eqName);
-				if (eqName == "default")
-					caller.set_f32(eqName+"_health", item.get_f32("health"));
-				item.server_Die();
-			}
 			else if (getEquipmentType(item) == "boots" && cmd == this.getCommandID("equip_boots"))
 			{
 				addBoots(caller, eqName);
@@ -182,7 +177,6 @@ void onDie(CBlob@ this)
 	{
 		string headname = this.get_string("equipment_head");
 		string torsoname = this.get_string("equipment_torso");
-		string torso2name = this.get_string("equipment2_torso");
 		string bootsname = this.get_string("equipment_boots");
 
 		//if (headname != "")
@@ -192,10 +186,6 @@ void onDie(CBlob@ this)
 		//if (torsoname != "")
 		//{
 		//	server_CreateBlob(torsoname, this.getTeamNum(), this.getPosition());
-		//}
-		//if (torso2name != "")
-		//{
-		//	server_CreateBlob(torso2name, this.getTeamNum(), this.getPosition());
 		//}
 		//if (bootsname != "")
 		//{
