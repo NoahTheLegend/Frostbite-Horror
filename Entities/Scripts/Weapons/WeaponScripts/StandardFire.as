@@ -23,6 +23,8 @@ void onInit(CBlob@ this)
 		ap.SetKeysToTake(key_action1);
 	}
 
+	this.set_string("inv_name", this.getInventoryName());
+
 	u8 t;
 	if (this.hasTag("pistol")) t = 5;
 	else if (this.hasTag("sniper")) t = 45;
@@ -194,6 +196,8 @@ void onTick(CBlob@ this)
 
 			GunSettings@ settings;
 			this.get("gun_settings", @settings);
+
+			this.setInventoryName(this.get_string("inv_name")+" ("+this.get_u8("clip")+"/"+settings.TOTAL+")");
 
 			// Case particle the gun uses
 			string casing = this.exists("CustomCase") ? this.get_string("CustomCase") : "Case";
