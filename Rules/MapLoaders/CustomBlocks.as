@@ -177,101 +177,42 @@ namespace CMap
 
 bool isTileCustomSolid(u32 index)
 {
-	return isTileSteel(index) || isTilePolishedStone(index) || isTileCaution(index) || isTileSnow(index) || isTileIce(index) || isTileElderBrick(index);
+	return isTileSteel(index) || isTilePolishedStone(index) || isTileCaution(index)
+		|| isTileSnow(index) || isTileIce(index) || isTileElderBrick(index);
 }
 
 bool isTileCaution(u32 index)
-{
-	return index >= CMap::tile_caution && index <= CMap::tile_caution_v2;
-}
+{return index >= CMap::tile_caution && index <= CMap::tile_caution_v2;}
 
 bool isTileSteel(u32 index)
-{
-	return index >= CMap::tile_steel && index <= CMap::tile_steel_d8;
-}
+{return index >= CMap::tile_steel && index <= CMap::tile_steel_d8;}
 
 bool isTileBackSteel(u32 index)
-{
-	return index >= CMap::tile_bsteel && index <= CMap::tile_bsteel_d4;
-}
-
-bool isBackSteelTile(CMap@ map, Vec2f pos) // required for getMask function
-{
-	u16 tile = map.getTile(pos).type;
-	return tile >= CMap::tile_bsteel && tile <= CMap::tile_bsteel_v2;
-}
-
-bool isSteelTile(CMap@ map, Vec2f pos) // required for getMask function
-{
-	u16 tile = map.getTile(pos).type;
-	return tile >= CMap::tile_steel && tile <= CMap::tile_steel_v14;
-}
+{return index >= CMap::tile_bsteel && index <= CMap::tile_bsteel_d4;}
 
 bool isTileSnow(TileType tile)
-{
-	return tile >= CMap::tile_snow && tile <= CMap::tile_snow_d3;
-}
+{return tile >= CMap::tile_snow && tile <= CMap::tile_snow_d3;}
 
 bool isTileSnowPile(TileType tile)
-{
-	return tile >= CMap::tile_snow_pile && tile <= CMap::tile_snow_pile_v5;
-}
+{return tile >= CMap::tile_snow_pile && tile <= CMap::tile_snow_pile_v5;}
 
 bool isTileElderBrick(u32 index)
-{
-	return index >= CMap::tile_elderbrick && index <= CMap::tile_elderbrick_d4;
-}
+{return index >= CMap::tile_elderbrick && index <= CMap::tile_elderbrick_d4;}
 
 bool isTilePolishedStone(u32 index)
-{
-	return index >= CMap::tile_polishedstone && index <= CMap::tile_polishedstone_d4;
-}
-
-bool isPolishedStoneTile(CMap@ map, Vec2f pos) // required for getMask function
-{
-	u16 tile = map.getTile(pos).type;
-	return tile >= CMap::tile_polishedstone && tile <= CMap::tile_polishedstone_v14;
-}
+{return index >= CMap::tile_polishedstone && index <= CMap::tile_polishedstone_d4;}
 
 bool isTileBackPolishedStone(u32 index)
-{
-	return index >= CMap::tile_bpolishedstone && index <= CMap::tile_bpolishedstone_d4;
-}
-
-bool isBackPolishedStoneTile(CMap@ map, Vec2f pos) // required for getMask function
-{
-	u16 tile = map.getTile(pos).type;
-	return tile >= CMap::tile_bpolishedstone && tile <= CMap::tile_bpolishedstone_v14;
-}
+{return index >= CMap::tile_bpolishedstone && index <= CMap::tile_bpolishedstone_d4;}
 
 bool isTileIce(u32 index)
-{
-	return index >= CMap::tile_ice && index <= CMap::tile_ice_d3;
-}
-
-bool isIceTile(CMap@ map, Vec2f pos) // required for getMask function
-{
-	u16 tile = map.getTile(pos).type;
-	return tile >= CMap::tile_ice && tile <= CMap::tile_ice_v14;
-}
+{return index >= CMap::tile_ice && index <= CMap::tile_ice_d3;}
 
 bool isTileBackGlass(u32 index)
-{
-	return index >= CMap::tile_bglass_d0 && index <= CMap::tile_bglass_v14;
-}
-
-bool isBackGlassTile(CMap@ map, Vec2f pos) // required for getMask function
-{
-	u16 tile = map.getTile(pos).type;
-	return tile >= CMap::tile_bglass && tile <= CMap::tile_bglass_v14;
-}
+{return index >= CMap::tile_bglass_d0 && index <= CMap::tile_bglass_v14;}
 
 bool isTileSnowBricks(u32 index)
-{
-	return index >= CMap::tile_snow_bricks && index <= CMap::tile_snow_bricks_d1;
-}
+{return index >= CMap::tile_snow_bricks && index <= CMap::tile_snow_bricks_d1;}
 
 bool isTileBackSnowBricks(u32 index)
-{
-	return index >= CMap::tile_bsnow_bricks && index <= CMap::tile_bsnow_bricks_d1;
-}
+{return index >= CMap::tile_bsnow_bricks && index <= CMap::tile_bsnow_bricks_d1;}

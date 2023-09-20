@@ -837,7 +837,7 @@ u8 ice_GetMask(CMap@ map, Vec2f pos)
 
 	for (u8 i = 0; i < 4; i++)
 	{
-		if (isIceTile(map, pos + directions[i])) mask |= 1 << i;
+		if (checkIceTile(map, pos + directions[i])) mask |= 1 << i;
 	}
 
 	return mask;
@@ -846,7 +846,7 @@ u8 ice_GetMask(CMap@ map, Vec2f pos)
 void ice_Update(CMap@ map, Vec2f pos)
 {
 	u16 tile = map.getTile(pos).type;
-	if (isIceTile(map, pos))
+	if (checkIceTile(map, pos))
 		map.SetTile(map.getTileOffset(pos),CMap::tile_ice+ice_GetMask(map,pos));
 }
 
@@ -890,7 +890,7 @@ u8 steel_GetMask(CMap@ map, Vec2f pos)
 
 	for (u8 i = 0; i < 4; i++)
 	{
-		if (isSteelTile(map, pos + directions[i])) mask |= 1 << i;
+		if (checkSteelTile(map, pos + directions[i])) mask |= 1 << i;
 	}
 
 	return mask;
@@ -899,7 +899,7 @@ u8 steel_GetMask(CMap@ map, Vec2f pos)
 void steel_Update(CMap@ map, Vec2f pos)
 {
 	u16 tile = map.getTile(pos).type;
-	if (isSteelTile(map, pos))
+	if (checkSteelTile(map, pos))
 		map.SetTile(map.getTileOffset(pos),CMap::tile_steel+steel_GetMask(map,pos));
 }
 
@@ -1018,7 +1018,7 @@ u8 polishedstone_GetMask(CMap@ map, Vec2f pos)
 
 	for (u8 i = 0; i < 4; i++)
 	{
-		if (isPolishedStoneTile(map, pos + directions[i])) mask |= 1 << i;
+		if (checkPolishedStoneTile(map, pos + directions[i])) mask |= 1 << i;
 	}
 
 	return mask;
@@ -1027,7 +1027,7 @@ u8 polishedstone_GetMask(CMap@ map, Vec2f pos)
 void polishedstone_Update(CMap@ map, Vec2f pos)
 {
 	u16 tile = map.getTile(pos).type;
-	if (isPolishedStoneTile(map, pos))
+	if (checkPolishedStoneTile(map, pos))
 		map.SetTile(map.getTileOffset(pos),CMap::tile_polishedstone+polishedstone_GetMask(map,pos));
 }
 
@@ -1071,7 +1071,7 @@ u8 bpolishedstone_GetMask(CMap@ map, Vec2f pos)
 
 	for (u8 i = 0; i < 4; i++)
 	{
-		if (isBackPolishedStoneTile(map, pos + directions[i])) mask |= 1 << i;
+		if (checkBackPolishedStoneTile(map, pos + directions[i])) mask |= 1 << i;
 	}
 
 	return mask;
@@ -1080,7 +1080,7 @@ u8 bpolishedstone_GetMask(CMap@ map, Vec2f pos)
 void bpolishedstone_Update(CMap@ map, Vec2f pos)
 {
 	u16 tile = map.getTile(pos).type;
-	if (isBackPolishedStoneTile(map, pos))
+	if (checkBackPolishedStoneTile(map, pos))
 		map.SetTile(map.getTileOffset(pos),CMap::tile_bpolishedstone+bpolishedstone_GetMask(map,pos));
 }
 
@@ -1114,7 +1114,7 @@ u8 bglass_GetMask(CMap@ map, Vec2f pos)
 
 	for (u8 i = 0; i < 4; i++)
 	{
-		if (isBackGlassTile(map, pos + directions[i])) mask |= 1 << i;
+		if (checkBackGlassTile(map, pos + directions[i])) mask |= 1 << i;
 	}
 
 	return mask;
@@ -1133,7 +1133,7 @@ void bglass_SetTile(CMap@ map, Vec2f pos)
 void bglass_Update(CMap@ map, Vec2f pos)
 {
 	u16 tile = map.getTile(pos).type;
-	if (isBackGlassTile(map, pos))
+	if (checkBackGlassTile(map, pos))
 		map.server_SetTile(pos,CMap::tile_bglass+bglass_GetMask(map,pos));
 }
 
@@ -1147,4 +1147,40 @@ void OnBackGlassTileHit(CMap@ map, u32 index)
 
 		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.0f);
 	}
+}
+
+bool checkPolishedStoneTile(CMap@ map, Vec2f pos) // required for getMask function
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_polishedstone && tile <= CMap::tile_polishedstone_v14;
+}
+
+bool checkBackGlassTile(CMap@ map, Vec2f pos) // required for getMask function
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_bglass && tile <= CMap::tile_bglass_v14;
+}
+
+bool checkBackPolishedStoneTile(CMap@ map, Vec2f pos) // required for getMask function
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_bpolishedstone && tile <= CMap::tile_bpolishedstone_v14;
+}
+
+bool checkIceTile(CMap@ map, Vec2f pos) // required for getMask function
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_ice && tile <= CMap::tile_ice_v14;
+}
+
+bool checkBackSteelTile(CMap@ map, Vec2f pos) // required for getMask function
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_bsteel && tile <= CMap::tile_bsteel_v2;
+}
+
+bool checkSteelTile(CMap@ map, Vec2f pos) // required for getMask function
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_steel && tile <= CMap::tile_steel_v14;
 }
