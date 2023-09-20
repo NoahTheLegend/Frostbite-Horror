@@ -4,6 +4,8 @@
 #include "MakeDustParticle.as";
 #include "FallDamageCommon.as";
 #include "KnockedCommon.as";
+#include "CustomBlocks.as";
+#include "UtilityChecks.as";
 
 void onInit(CMovement@ this)
 {
@@ -100,8 +102,6 @@ void onTick(CMovement@ this)
 	if (onground || blob.isInWater())  //also reset when vaulting
 	{
 		moveVars.walljumped_side = Walljump::NONE;
-		moveVars.wallrun_start = pos.y;
-		moveVars.wallrun_current = pos.y;
 		moveVars.fallCount = -1;
 	}
 
@@ -314,6 +314,12 @@ void onTick(CMovement@ this)
 
 		}
 
+		// cancel any further walljump if not pressing up
+		if (!up)
+		{
+			moveVars.wallrun_count = 1000;
+		}
+
 		//wall jumping/running
 		if (up && surface && 									//only on surface
 		        moveVars.walljumped_side != Walljump::BOTH &&		//do nothing if jammed
@@ -327,54 +333,73 @@ void onTick(CMovement@ this)
 
 			bool dust = false;
 
-			if (moveVars.jumpCount > 5) //wait some time to be properly in the air
+			if (moveVars.jumpCount > 3) //wait some time to be properly in the air
 			{
 				//set contact point
 				bool set_contact = false;
+				bool set_contact_candidate = false;
+
+				// only initiate a contact IF the player is not going to waste boosting if it was the first walljump attempt
+				// this has the unfortunate side effect that when wanting to climb 2 air gap large towers the walljump
+				// would ideally be initiated earlier.
+
+				// players can avoid this by tapping up shortly to make a small jump, which will make them reach minimal
+				// velocity faster.
+
+				// to mitigate part of this we also ensure this is only done for the first jump.
+				// this should assist with newbies climbing walls, while letting more advanced players begin walljumps as
+				// early as they want
+
 				if (left && surface_left && (moveVars.walljumped_side == Walljump::RIGHT || jumpedRIGHT || wasNONE))
 				{
-					moveVars.walljumped_side = Walljump::LEFT;
-					moveVars.wallrun_start = pos.y;
-					moveVars.wallrun_current = pos.y + 1.0f;
-					set_contact = true;
+					set_contact_candidate = true;
 				}
 				if (right && surface_right && (moveVars.walljumped_side == Walljump::LEFT || jumpedLEFT || wasNONE))
 				{
-					moveVars.walljumped_side = Walljump::RIGHT;
-					moveVars.wallrun_start = pos.y;
-					moveVars.wallrun_current = pos.y + 1.0f;
+					set_contact_candidate = true;
+				}
+
+				if (set_contact_candidate)
+				{
+					// print("contact candidate @" + getGameTime() + ": side was " + moveVars.walljumped_side);
+
+					// are we starting to hit the wall?
+					// then we want our first climb to be a contact
+					moveVars.wallrun_count = 1000;
+				}
+
+				// set contact immediately if jumping at the wall from an angle; not immediately if hugging wall
+                if (set_contact_candidate && ((vel.y >= -0.0f && vel.y < slidespeed && Maths::Abs(blob.getOldVelocity().x) == 0) || Maths::Abs(blob.getOldVelocity().x) > 0 || !wasNONE))
+				{
+					// print("candidate passes, & our velocity is " + vel.y);
+
+					// ready to hit the wall, and conditions align?
+					// reset wallclimb counters and let's start
+					moveVars.walljumped_side = left ? Walljump::LEFT : Walljump::RIGHT;
+					moveVars.wallrun_count = 0;
 					set_contact = true;
 				}
 
-				//wallrun
-				if (!surface_above && vel.y < slidespeed &&
+				// wallrun: is the player still trying to climb up, and is he not falling too fast to allow it
+				if (vel.y < slidespeed &&
 				        ((left && surface_left && !jumpedLEFT) || (right && surface_right && !jumpedRIGHT) || set_contact))
 				{
-					//within range
-					if (set_contact ||
-					        (pos.y - 1.0f < moveVars.wallrun_current &&
-					         pos.y + 1.0f > moveVars.wallrun_start - map.tilesize * moveVars.wallrun_length))
+					// allow 1st climb "unconditionally" (there were checks above)
+					// allow next climbs depending on a velocity condition
+					const bool should_trigger_climb = set_contact || (!set_contact_candidate && vel.y >= -2.0f);
+
+					// limit climbs to an arbitrarily choosen number
+					if (should_trigger_climb && moveVars.wallrun_count < moveVars.wallrun_length)
 					{
-						moveVars.wallrun_current = Maths::Min(pos.y - 1.0f, moveVars.wallrun_current - 1.0f);
+						vel.Set(0, -moveVars.jumpMaxVel * moveVars.wallrun_factor);
+						blob.setVelocity(vel);
 
+						// reduce sound spam, especially when climbing 2 air gap large towers
+						if (!set_contact) { blob.getSprite().PlayRandomSound("/StoneJump"); }
+						dust = true;
+
+						++moveVars.wallrun_count;
 						moveVars.walljumped = true;
-						if (set_contact || getGameTime() % 5 == 0)
-						{
-							dust = true;
-
-							f32 wallrun_speed = moveVars.jumpMaxVel * 1.2f;
-
-							if (vel.y > -wallrun_speed || set_contact)
-							{
-								vel.Set(0, -wallrun_speed);
-								blob.setVelocity(vel);
-							}
-
-							if (!set_contact)
-							{
-								blob.getSprite().PlayRandomSound("/StoneJump");
-							}
-						}
 					}
 					else
 					{
@@ -386,7 +411,7 @@ void onTick(CMovement@ this)
 				         ((left && surface_right) || (right && surface_left)) &&
 				         !surface_below && !jumpedLEFT && !jumpedRIGHT)
 				{
-					f32 walljumpforce = 4.0f;
+					f32 walljumpforce = 2.0f;
 					vel.Set(surface_right ? -walljumpforce : walljumpforce, -2.0f);
 					blob.setVelocity(vel);
 
@@ -402,6 +427,13 @@ void onTick(CMovement@ this)
 					{
 						moveVars.walljumped_side = Walljump::JUMPED_RIGHT;
 					}
+				}
+
+				if (surface_above)
+				{
+					// prevent any new walljump on that wall if a wall is blocking us above
+					// but allow one to happen (as the code above will have run)
+					moveVars.wallrun_count = 1000;
 				}
 			}
 
@@ -498,8 +530,7 @@ void onTick(CMovement@ this)
 				moveVars.jumpCount = -3;
 
 				moveVars.walljumped_side = Walljump::NONE;
-				moveVars.wallrun_start = pos.y;
-				moveVars.wallrun_current = pos.y;
+				moveVars.wallrun_count = 1000;
 			}
 		}
 	}
@@ -565,12 +596,7 @@ void onTick(CMovement@ this)
 				force.y -= moveVars.jumpEnd;
 			}
 
-			//if (blob.isOnWall()) {
-			//  force.y *= 1.1f;
-			//}
-
 			force *= moveVars.jumpFactor * moveVars.overallScale * 60.0f;
-
 
 			blob.AddForce(force);
 
@@ -613,15 +639,15 @@ void onTick(CMovement@ this)
 		CBlob@ carryBlob = blob.getCarriedBlob();
 		if (carryBlob !is null)
 		{
-			if (carryBlob.hasTag("heavy weight"))
-			{
-				moveVars.walkFactor *= 0.6f;
-				moveVars.jumpFactor *= 0.5f;
-			}
-            else if (carryBlob.hasTag("medium weight"))
+			if (carryBlob.hasTag("medium weight"))
 			{
 				moveVars.walkFactor *= 0.8f;
 				moveVars.jumpFactor *= 0.8f;
+			}
+			else if (carryBlob.hasTag("heavy weight"))
+			{
+				moveVars.walkFactor *= 0.6f;
+				moveVars.jumpFactor *= 0.5f;
 			}
 		}
 
@@ -687,12 +713,21 @@ void onTick(CMovement@ this)
 
 			if (moveVars.walljumped)
 			{
-				moveVars.stoppingFactor *= 0.5f;
+				moveVars.stoppingFactor *= 1.5f;
 				moveVars.walkFactor *= 0.6f;
 
 				//hack - fix gliding
 				if (vel.y > 0 && blob.hasTag("shielded"))
 					moveVars.walkFactor *= 0.6f;
+			}
+
+			f32 ice_stop_factor = 1.0f;
+			f32 ice_move_factor = 1.0f;
+			TileType tile = getSurfaceTile(blob).type;
+			if (tile != -1 && isTileIce(tile))
+			{
+				ice_stop_factor = 0.05f;
+				ice_move_factor = 0.35f;
 			}
 
 			bool stopped = false;
@@ -703,8 +738,8 @@ void onTick(CMovement@ this)
 					stopped = true;
 					stop_force.x -= (absx - lim) * (greater ? 1 : -1);
 
-					stop_force.x *= moveVars.overallScale * 30.0f * moveVars.stoppingFactor *
-					                (onground ? moveVars.stoppingForce : moveVars.stoppingForceAir);
+					stop_force.x *= moveVars.overallScale * 30.0f * ice_stop_factor * moveVars.stoppingFactor *
+					                (onground ? moveVars.stoppingForce : moveVars.stoppingForceAir * moveVars.stoppingForceAirFactor);
 
 					if (absx > 3.0f)
 					{
@@ -719,7 +754,7 @@ void onTick(CMovement@ this)
 
 			if (!isknocked && ((absx < lim) || left && greater || right && !greater))
 			{
-				force *= moveVars.walkFactor * moveVars.overallScale * 30.0f;
+				force *= moveVars.walkFactor * moveVars.overallScale * (onground ? 30.0f : 15.0f) * ice_move_factor;
 				if (Maths::Abs(force) > 0.01f)
 				{
 					blob.AddForce(walkDirection * force);
@@ -781,6 +816,7 @@ void CleanUp(CMovement@ this, CBlob@ blob, RunnerMoveVars@ moveVars)
 	moveVars.jumpFactor = 1.0f;
 	moveVars.walkFactor = 1.0f;
 	moveVars.stoppingFactor = 1.0f;
+	moveVars.stoppingForceAirFactor = 1.0f;
 	moveVars.wallsliding = false;
 	moveVars.canVault = true;
 }
