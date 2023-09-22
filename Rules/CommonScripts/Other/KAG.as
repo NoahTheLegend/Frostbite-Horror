@@ -55,6 +55,8 @@ void onRestart(CRules@ this)
 		//(it is on server, but not on client unfortunately)
 		need_sky_check = true;
 	}
+
+	if (getMap() !is null) getMap().AddScript("RoomDetector.as");
 }
 
 void onTick(CRules@ this)

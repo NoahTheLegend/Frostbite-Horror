@@ -6,11 +6,12 @@
 
 bool LoadMap(CMap@ map, const string& in fileName)
 {
+	getRules().Tag("loading");
 	print("LOADING PNG MAP " + fileName);
 
 	PNGLoader loader();
 
 	MiniMap::Initialise();
-
+	
 	return loader.loadMap(map, fileName);
 }

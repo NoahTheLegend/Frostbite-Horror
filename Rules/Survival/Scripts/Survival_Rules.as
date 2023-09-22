@@ -36,6 +36,8 @@ void onTick(CRules@ this)
 
 	CheckForRespawn(this);
 
+	if (this.hasTag("loading")) this.Untag("loading");
+
 	//if (isClient() && isServer()) return;
 	f32 daytime = map.getDayTime();
 	this.daycycle_speed = daytime > 0.05f && daytime < 0.95f ? day_speed : night_speed;
