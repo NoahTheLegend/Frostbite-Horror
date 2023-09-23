@@ -175,16 +175,16 @@ namespace CMap
 	};
 };
 
-bool isSolid(CMap@ map, u32 index)
+bool isSolid(CMap@ map, u32 type)
 {
-	return isSolid(map,index) || isTileSteel(index) || isTilePolishedStone(index) || isTileCaution(index)
-		|| isTileSnow(index) || isTileIce(index) || isTileElderBrick(index);
+	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedStone(type) || isTileCaution(type)
+		|| isTileSnow(type) || isTileIce(type) || isTileElderBrick(type);
 }
 
 bool isSolid(CMap@ map, Vec2f pos)
 {
-	u32 index = map.getTile(pos).type;
-	return isSolid(map, index);
+	u32 type = map.getTile(pos).type;
+	return isSolid(map, type);
 }
 
 bool isTileExposure(u32 index) // for RoomDetector.as

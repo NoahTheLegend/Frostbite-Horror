@@ -72,7 +72,7 @@ void onTick(CRules@ this)
 		// if yes - totally solid, looks buggy with "floating" tiles
 		bool has_solid_tiles = false;
 		for(int i = 0; i < map.tilemapwidth; i++) {
-			if(map.isTileSolid(map.getTile(i))) {
+			if(isSolid(map, map.getTile(i).type)) {
 				has_solid_tiles = true;
 				break;
 			}

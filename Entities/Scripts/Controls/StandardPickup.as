@@ -106,6 +106,7 @@ void onTick(CBlob@ this)
 		for (uint i = 0; i < menu.entries.length; i++)
 		{
 			PickupWheelMenuEntry@ entry = cast<PickupWheelMenuEntry>(menu.entries[i]);
+			if (entry is null) continue;
 			entry.disabled = true;
 
 			for (uint j = 0; j < available.length; j++)

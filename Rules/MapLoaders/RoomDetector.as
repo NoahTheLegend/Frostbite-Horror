@@ -1,8 +1,10 @@
+#define SERVER_ONLY
 #include "CustomBlocks.as";
 
 array<bool> tile_map();
-const u8 max_inits_per_tick = 1;
-const u8 max_length = 10;
+const u16 max_steps_per_tick = 100;
+const u32 max_length = 1000;
+const Vec2f debug_area = Vec2f(20, 20);
 
 void onInit(CRules@ this)
 {
@@ -43,64 +45,98 @@ void onSetTile(CMap@ map, u32 index, TileType new_tile, TileType old_tile)
     flood_order.push_back(index);
 }
 
+u32[] list = {};
 u32[] flood_order = {};
+u32 start_index = 0;
+int length = max_length;
+int steps_remaining = max_steps_per_tick;
 
 void onTick(CRules@ this)
 {
     CMap@ map = getMap();
     if (map is null) return;
 
-    for (u16 i = 0; i < Maths::Min(max_inits_per_tick, flood_order.size()); i++)
+    if (list.size() == 0)
     {
-        Flood(map, flood_order[flood_order.length-(i+1)], max_length); // recursive-less
-        flood_order.erase(flood_order.length-(i+1));
+        ResetFlood();
+        for (u16 i = 0; i < flood_order.size(); i++)
+        {
+            start_index = flood_order[flood_order.size()-1];
+            length = max_length;
+
+            flood_order.erase(flood_order.size()-1);
+        }
+    }
+
+    if (start_index != 0)
+    {
+        list.push_back(start_index);
+        start_index = 0;
+
+        while (list.size() != 0)
+        {
+            u32 step = list[0];
+            if (tile_map[step])
+            {
+                list.erase(0);
+                continue;
+            }
+
+            if (length > 0)
+            {
+                u32 up = step - map.tilemapwidth;
+                if (FloodValidation(map, up))
+                    list.push_back(up); length--;
+
+                u32 right = step + 1;
+                if (FloodValidation(map, right))
+                    list.push_back(right); length--;
+
+                u32 down = step + map.tilemapwidth;
+                if (FloodValidation(map, down))
+                    list.push_back(down); length--;
+
+                u32 left = step - 1;
+                if (FloodValidation(map, left))
+                    list.push_back(left); length--;
+            }
+
+            Vec2f pos = map.getTileWorldPosition(step);
+            tile_map[step] = true;
+
+            if (steps_remaining == 0)
+            {
+                start_index = step;
+                steps_remaining = max_steps_per_tick;
+                break;
+            }
+
+            list.erase(0);
+            steps_remaining--;
+        }
     }
 }
 
-void Flood(CMap@ map, u32 index, u8 length) // recursive-less version
+void ResetFlood()
 {
-    u32[] list;
-    list.push_back(index);
-
-    if (length == 0) return;
-
-    while (list.size() != 0)
-    {
-        if (length == 0) return;
-        u32 step = list[0];
-
-        u32 up = step - map.tilemapwidth;
-        if (FloodValidation(map, up))
-            list.push_back(up);
-
-        u32 right = step + 1;
-        if (FloodValidation(map, right))
-            list.push_back(right);
-
-        u32 down = step + map.tilemapwidth;
-        if (FloodValidation(map, down))
-            list.push_back(down);
-
-        u32 left = step - 1;
-        if (FloodValidation(map, left))
-            list.push_back(left);
-
-        Vec2f pos = map.getTileWorldPosition(step);
-        tile_map[step] = true;
-
-        list.erase(0);
-        length--;
-    }
+    list = array<u32>();
+    start_index = 0;
+    length = max_length;
 }
 
 bool FloodValidation(CMap@ map, u32 index)
 {
-    return !tile_map[index] && !isTileExposure(map.getTile(index).type);
+    TileType tile = map.getTile(index).type;
+    bool isroom = tile_map[index];
+    bool exposure = isTileExposure(tile);
+    bool solid = isSolid(map, tile);
+    //printf(index+" "+isroom+" > "+exposure+" > "+solid);
+    return !isroom && !exposure && !solid;
 }
 
 void onRender(CRules@ this) // debug
 {
-    if (tile_map.length == 0) return;
+    if (tile_map.size() == 0) return;
     CMap@ map = getMap();
     if (map is null) return;
 
@@ -108,9 +144,9 @@ void onRender(CRules@ this) // debug
     if (!getControls().isKeyPressed(KEY_LSHIFT)) return;
 
     Vec2f pos = getControls().getMouseWorldPos()+Vec2f(8, 8);
-    Vec2f area = Vec2f(10, 10);
-
-    GUI::SetFont("MENU");
+    Vec2f area = debug_area;
+    int room_count = 0;
+    GUI::SetFont("menu");
 
     for (u32 i = 0; i < area.x * area.y; i++)
     {
@@ -121,12 +157,16 @@ void onRender(CRules@ this) // debug
         SColor color = SColor(125, 255, 25, 25);
         u32 offset = map.getTileOffset(centralized_pos);
         bool has_room = tile_map[offset];
+
         if (has_room)
         {
+            room_count++;
             color.set(125, 25, 255, 25);
         }
 
         GUI::DrawRectangle(screen_pos-Vec2f(4,4), screen_pos+Vec2f(4,4), color);
         if (i == 0) GUI::DrawTextCentered(offset+"", screen_pos-Vec2f(4,2), SColor(155, 255, 255, 0));
     }
+    GUI::DrawText("list size: "+list.size()+"\nindex: "+start_index+"\nlength: "+length+"\nflood order size: "+flood_order.size()+"\nroom count: "+room_count,
+        Vec2f(15, 50), SColor(155, 255, 255, 25));
 }
