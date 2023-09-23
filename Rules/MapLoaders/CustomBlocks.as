@@ -175,10 +175,21 @@ namespace CMap
 	};
 };
 
-bool isTileCustomSolid(u32 index)
+bool isSolid(CMap@ map, u32 index)
 {
-	return isTileSteel(index) || isTilePolishedStone(index) || isTileCaution(index)
+	return isSolid(map,index) || isTileSteel(index) || isTilePolishedStone(index) || isTileCaution(index)
 		|| isTileSnow(index) || isTileIce(index) || isTileElderBrick(index);
+}
+
+bool isSolid(CMap@ map, Vec2f pos)
+{
+	u32 index = map.getTile(pos).type;
+	return isSolid(map, index);
+}
+
+bool isTileExposure(u32 index) // for RoomDetector.as
+{
+	return index == CMap::tile_empty || isTileSnowPile(index);
 }
 
 bool isTileCaution(u32 index)

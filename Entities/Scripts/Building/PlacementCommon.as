@@ -1,3 +1,4 @@
+#include "CustomBlocks.as";
 
 const f32 MAX_BUILD_LENGTH = 4.0f;
 
@@ -61,7 +62,7 @@ bool isBuildableAtPos(CBlob@ this, Vec2f p, TileType buildTile, CBlob @blob, boo
 	}
 
 	// tilemap check
-	const bool buildSolid = (map.isTileSolid(buildTile) || (blob !is null && blob.isCollidable()));
+	const bool buildSolid = (isSolid(map,buildTile) || (blob !is null && blob.isCollidable()));
 	Vec2f tilespace = map.getTileSpacePosition(p);
 	const int offset = map.getTileOffsetFromTileSpace(tilespace);
 	Tile backtile = map.getTile(offset);
@@ -95,9 +96,9 @@ bool isBuildableAtPos(CBlob@ this, Vec2f p, TileType buildTile, CBlob @blob, boo
 		//cant build wood on stone background
 		return false;
 	}
-	else if (map.isTileSolid(backtile))
+	else if (isSolid(map,backtile.type))
 	{
-		if (!buildSolid && !map.isTileSolid(backtile))
+		if (!buildSolid && !isSolid(map,backtile.type))
 		{
 			//skip onwards, platforms and doors don't block backwall
 		}
@@ -343,7 +344,7 @@ bool inNoBuildZone(CBlob@ blob, CMap@ map, Vec2f here, TileType buildTile)
 		isSpikes = bname == "spikes";
 	}
 
-	const bool buildSolid = (map.isTileSolid(buildTile) || (blob !is null && blob.isCollidable()));
+	const bool buildSolid = (isSolid(map,buildTile) || (blob !is null && blob.isCollidable()));
 
 	return (!isLadder && (buildSolid || isSpikes) && map.getSectorAtPosition(here, "no build") !is null);
 }
