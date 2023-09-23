@@ -974,7 +974,7 @@ void elderbrick_SetTile(CMap@ map, Vec2f pos)
 {
 	Tile tile = map.getTile(pos);
 	tile.dirt = 255;
-	if (!map.isTileSolid(map.getTile(pos-Vec2f(0,8))) && !isTileCustomSolid(map.getTile(pos-Vec2f(0,8)).type))
+	if (!isSolid(map, map.getTile(pos-Vec2f(0,8)).type))
 		map.SetTile(map.getTileOffset(pos), CMap::tile_elderbrick_v0);
 }
 

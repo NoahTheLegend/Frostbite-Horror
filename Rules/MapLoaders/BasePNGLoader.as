@@ -459,7 +459,7 @@ class PNGLoader
 		case tree_offset:
 		{
 			// load trees only at the ground
-			if(!map.isTileSolid(map.getTile(offset + map.tilemapwidth))) return;
+			if(isSolid(map, map.getTile(offset + map.tilemapwidth).type)) return;
 
 			CBlob@ tree = server_CreateBlobNoInit( "tree_pine" );
 			if(tree !is null)
@@ -587,7 +587,7 @@ void PlaceMostLikelyTile(CMap@ map, int offset)
 			map.SetTile(offset, CMap::tile_ground_back);
 		}
 	}
-	else if(map.isTileSolid(down) && (map.isTileGrass(left) || map.isTileGrass(right)))
+	else if(isSolid(map, down) && (map.isTileGrass(left) || map.isTileGrass(right)))
 	{
 		map.SetTile(offset, CMap::tile_grass + 2 + map_random.NextRanged(2));
 	}

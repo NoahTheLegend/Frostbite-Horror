@@ -1,4 +1,6 @@
-///Minimap Code
+#include "CustomBlocks.as"
+
+//Minimap Code
 SColor color_sky = SColor(0xffA5BDC8);
 SColor color_dirt = SColor(0xff844715);
 SColor color_dirt_backwall = SColor(0xff3B1406);
@@ -116,7 +118,7 @@ namespace MiniMap
 
 	bool isForegroundOutlineTile(Tile tile, CMap@ map)
 	{
-		return !map.isTileSolid(tile);
+		return !isSolid(map, tile.type);
 	}
 
 	bool isOpenAirTile(Tile tile, CMap@ map)
@@ -133,7 +135,7 @@ namespace MiniMap
 	bool isGoldOutlineTile(Tile tile, CMap@ map, bool is_gold)
 	{
 		return is_gold ?
-			!map.isTileSolid(tile.type) :
+			!isSolid(map, tile.type) :
 			map.isTileGold(tile.type);
 	}
 
