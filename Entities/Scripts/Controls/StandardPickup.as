@@ -5,7 +5,6 @@
 #include "ThrowCommon.as"
 #include "WheelMenuCommon.as"
 #include "KnockedCommon.as"
-#include "CustomBlocks.as";
 
 const u32 PICKUP_ERASE_TICKS = 80;
 
@@ -641,7 +640,7 @@ bool canBlobBePickedUp(CBlob@ this, CBlob@ blob)
 
 			}
 
-			if(isSolid(map,hi.tile))
+			if(map.isTileSolid(hi.tile))
 			{
 				canRayCast = false;
 				break;

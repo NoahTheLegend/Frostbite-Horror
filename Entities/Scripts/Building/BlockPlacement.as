@@ -1,8 +1,8 @@
 #include "PlacementCommon.as"
 #include "BuildBlock.as"
 #include "Requirements.as"
-#include "CustomBlocks.as";
-#include "GameplayEvents.as";
+
+#include "GameplayEvents.as"
 
 // Called server side
 void PlaceBlock(CBlob@ this, u8 index, Vec2f cursorPos)
@@ -59,7 +59,7 @@ bool serverTileCheck(CBlob@ blob, u8 tileIndex, Vec2f cursorPos)
 	CMap@ map = getMap();
 	Tile backtile = map.getTile(cursorPos);
 
-	if (map.isTileBedrock(backtile.type) || isSolid(map,backtile.type) && map.isTileGroundStuff(backtile.type)) 
+	if (map.isTileBedrock(backtile.type) || map.isTileSolid(backtile.type) && map.isTileGroundStuff(backtile.type)) 
 		return false;
 
 	// Make sure we actually have support at our cursor pos
@@ -71,7 +71,7 @@ bool serverTileCheck(CBlob@ blob, u8 tileIndex, Vec2f cursorPos)
 		return false;
 
 	// Is our tile solid and are we trying to place it into a no build area
-	if (isSolid(map,tileIndex))
+	if (map.isTileSolid(tileIndex))
 	{
 		pos = cursorPos + Vec2f(map.tilesize * 0.5f, map.tilesize * 0.5f);
 
@@ -87,7 +87,7 @@ bool serverTileCheck(CBlob@ blob, u8 tileIndex, Vec2f cursorPos)
 	}
 
 	// Are we trying to place a solid tile on a door/ladder/platform/bridge (usually due to lag)?
-	if (fakeHasTileSolidBlobs(cursorPos) && isSolid(map,blockToPlace.tile))
+	if (fakeHasTileSolidBlobs(cursorPos) && map.isTileSolid(blockToPlace.tile))
 	{
 		return false;
 	}

@@ -11,7 +11,6 @@
 #include "GunModule.as"
 #include "BulletCase.as";
 #include "Recoil.as";
-#include "CustomBlocks.as";
 
 const uint8 NO_AMMO_INTERVAL = 25;
  
