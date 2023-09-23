@@ -233,7 +233,7 @@ namespace Material
 		CMap@ map = getMap();
 
 		// Only solid tiles yield materials
-		if (not isSolid(map,type)) return;
+		if (not map.isTileSolid(type)) return;
 
 		if (map.isTileThickStone(type))
 		{

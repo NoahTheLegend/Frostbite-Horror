@@ -79,7 +79,7 @@ CBlob@ server_BuildBlob(CBlob@ this, BuildBlock[]@ blocks, uint index)
 				{
 					Vec2f temp = (Vec2f(step_x + 0.5, step_y + 0.5) * map.tilesize);
 					Vec2f v = offsetPos + temp;
-					if (map.getSectorAtPosition(v , "no build") !is null || isSolid(map, map.getTile(v).type))
+					if (map.getSectorAtPosition(v , "no build") !is null || map.isTileSolid(v))
 					{
 						fail = true;
 						break;
