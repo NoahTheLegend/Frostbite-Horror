@@ -416,7 +416,7 @@ bool loadMap(CMap@ _map, const string& in filename)
 			}
 
 			//and write in water if needed
-			if(!map.isTileSolid(t) && y > water_baseline_tiles)
+			if(!isSolid(map,t) && y > water_baseline_tiles)
 			{
 				map.server_setFloodWaterOffset(offset, true);
 				if(mirror_map)

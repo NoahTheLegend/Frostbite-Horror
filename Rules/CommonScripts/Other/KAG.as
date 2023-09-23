@@ -2,6 +2,7 @@
 #include "Default/DefaultLoaders.as"
 #include "PrecacheTextures.as"
 #include "EmotesCommon.as"
+#include "CustomBlocks.as"
 
 void onInit(CRules@ this)
 {

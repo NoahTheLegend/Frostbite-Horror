@@ -7,6 +7,7 @@
 #include "GameplayEvents.as";
 #include "Requirements.as"
 #include "RunnerTextures.as"
+#include "CustomBlocks.as";
 
 bool PlaceBlob(CBlob@ this, CBlob @blob, Vec2f cursorPos, bool repairing = false, CBlob@ repairBlob = null)
 {
@@ -70,7 +71,7 @@ bool serverBlobCheck(CBlob@ blob, CBlob@ blobToPlace, Vec2f cursorPos, bool repa
 	CMap@ map = getMap();
 	Tile backtile = map.getTile(cursorPos);
 
-	if (map.isTileBedrock(backtile.type) || map.isTileSolid(backtile.type))
+	if (map.isTileBedrock(backtile.type) || isSolid(map,backtile.type))
 		return false;
 
 	// Make sure we actually have support at our cursor pos
