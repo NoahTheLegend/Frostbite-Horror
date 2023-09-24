@@ -2,7 +2,7 @@
 #include "CustomBlocks.as";
 
 array<u8> tile_map();
-const u16 max_steps_per_tick = 100;
+const u16 max_steps_per_tick = 50;
 const u32 max_length = 500; // it is shorter so uh dont count this for tiles 
 const Vec2f debug_area = Vec2f(20, 20);
 

@@ -14,6 +14,11 @@ void onInit(CSprite@ this)
 
 	this.getCurrentScript().runFlags |= Script::tick_not_infire;
 	this.SetZ(0.0f);
+
+	CBlob@ blob = this.getBlob();
+	if (blob is null) return;
+	blob.set_string("idle_anim", "idle0");
+	blob.set_u32("idle_cooldown", 0);
 }
 
 void onPlayerInfoChanged(CSprite@ this)
@@ -133,27 +138,7 @@ void onTick(CSprite@ this)
 		}
 		else
 		{
-			// get the angle of aiming with mouse
-			Vec2f aimpos = blob.getAimPos();
-			Vec2f vec = aimpos - pos;
-			f32 angle = vec.Angle();
-			int direction;
-
-			if ((angle > 330 && angle < 361) || (angle > -1 && angle < 30) ||
-			        (angle > 150 && angle < 210))
-			{
-				direction = 0;
-			}
-			else if (aimpos.y < pos.y)
-			{
-				direction = -1;
-			}
-			else
-			{
-				direction = 1;
-			}
-
-			defaultIdleAnim(this, blob, direction);
+			defaultIdleAnim(this, blob, 0);
 		}
 	}
 
