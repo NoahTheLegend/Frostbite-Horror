@@ -2,8 +2,8 @@
 #include "CustomBlocks.as";
 
 array<u8> tile_map();
-const u16 max_steps_per_tick = 50;
-const u32 max_length = 5000; // it is shorter so uh dont count this for tiles 
+const u16 max_steps_per_tick = 100;
+const u32 max_length = 500; // it is shorter so uh dont count this for tiles 
 const Vec2f debug_area = Vec2f(20, 20);
 
 void onInit(CRules@ this)
@@ -51,6 +51,7 @@ u32 start_index = 0;
 int length = max_length;
 int steps_remaining = max_steps_per_tick;
 bool reverse = false;
+u32 steps_done = 0;
 
 void onTick(CRules@ this)
 {
@@ -73,8 +74,9 @@ void onTick(CRules@ this)
 
         while (list.size() != 0)
         {
+            steps_done++;
             if (length == 0) reverse = true; // reverse if we didn't close the flood and we can't see further
-
+            
             u32 step = list[0];
             if (reverse ? tile_map[step] == 0 : tile_map[step] != 0) // this is necessary trust me
             {
@@ -86,32 +88,45 @@ void onTick(CRules@ this)
             {
                 u32 up = step - map.tilemapwidth;
                 if (FloodValidation(map, up))
-                    list.push_back(up); length--;
+                {
+                    list.push_back(up);
+                    length--;
+                }
                 
                 u32 right = step + 1;
                 if (FloodValidation(map, right))
-                    list.push_back(right); length--;
+                {
+                    list.push_back(right);
+                    length--;
+                }
 
                 u32 down = step + map.tilemapwidth;
                 if (FloodValidation(map, down))
-                    list.push_back(down); length--;
+                {
+                    list.push_back(down);
+                    length--;
+                }
 
                 u32 left = step - 1;
                 if (FloodValidation(map, left))
-                    list.push_back(left); length--;
+                {
+                    list.push_back(left);
+                    length--;
+                }
             }
 
             Vec2f pos = map.getTileWorldPosition(step);
             tile_map[step] = reverse ? 0 : 255; // todo: count exposures to set relative temperature near them
+            list.erase(0);
 
             if (steps_remaining == 0) // save for next tick if we exhausted the limit
             {
+                steps_done = 0;
                 start_index = step;
                 steps_remaining = max_steps_per_tick;
                 break;
             }
-
-            list.erase(0);
+            
             steps_remaining--;
         }
     }
@@ -131,7 +146,11 @@ bool FloodValidation(CMap@ map, u32 index)
     bool exposure = isTileExposure(tile);
     bool solid = isSolid(map, tile);
 
-    if (exposure) reverse = true; steps_remaining = 0; // gotta send it for next tick, otherwise bug
+    if (exposure)
+    {
+        reverse = true;
+        steps_remaining = 0; // gotta send it for next tick, otherwise bug
+    }
 
     //printf(index+" "+isroom+" > "+exposure+" > "+solid);
     return reverse ? isroom : (!isroom && !exposure && !solid);
@@ -151,7 +170,7 @@ void onRender(CRules@ this) // debug
     int room_count = 0;
     
     GUI::SetFont("menu");
-    GUI::DrawText("list size: "+list.size()+"\nindex: "+start_index+"\nlength: "+length+"\nflood order size: "+flood_order.size()+"\nroom count: "+room_count,
+    GUI::DrawText("list size: "+list.size()+"\nindex: "+start_index+"\nlength: "+length+"\nflood order size: "+flood_order.size()+"\nroom count: "+room_count+"\nsteps in last tick: "+steps_done,
         Vec2f(15, 50), SColor(255, 255, 255, 25));
     GUI::SetFont("default");
 

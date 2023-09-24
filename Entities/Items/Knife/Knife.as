@@ -24,10 +24,11 @@ void onInit(CBlob@ this)
 
 	this.set_f32("rotation_mod", 5);
 	this.Tag("sharp");
+	this.Tag("side_attack"); // hit only left or right
+	this.set_f32("attack_arc", 45);
 
 	CSprite@ sprite = this.getSprite();
 	if (sprite is null) return;
-	sprite.ScaleBy(Vec2f(0.85f, 0.75f));
 }
 
 void onTick(CBlob@ this)
@@ -78,6 +79,7 @@ void onTick(CBlob@ this)
 void onRender(CSprite@ sprite) // lock it to fps so it doesnt "shake" inbetween face direction changes
 {
 	sprite.ResetTransform();
+	sprite.ScaleBy(0.85f, 0.75f);
 
 	CBlob@ this = sprite.getBlob();
 	if (this is null) return;

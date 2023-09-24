@@ -1,6 +1,7 @@
 // keep this script in cfg script order after scripts where you init corresponding variables and tags
 #include "Hitters.as";
 #include "Knocked.as";
+#include "UtilityWeapons.as";
 
 void onInit(CBlob@ this)
 {
@@ -9,6 +10,7 @@ void onInit(CBlob@ this)
 	if (!this.exists("knock_time")) this.set_u8("knock_time", 0);
 	if (!this.exists("hitter")) this.set_u8("hitter", Hitters::sword);
     if (!this.exists("attack_types_amount")) this.set_u8("attack_types_amount", 1);
+	if (!this.exists("attack_arc")) this.set_f32("attack_arc", 30.0f);
 
     AttachmentPoint@ ap = this.getAttachments().getAttachmentPointByName("PICKUP");
 	if (ap !is null)
@@ -43,7 +45,7 @@ void onTick(CBlob@ this)
 				u8 team = holder.getTeamNum();
 				
 				HitInfo@[] hitInfos;
-				if (getMap().getHitInfosFromArc(this.getPosition(), getAimAngle(this, holder), 30, 16, this, @hitInfos))
+				if (getMap().getHitInfosFromArc(this.getPosition(), this.hasTag("side_attack") ? this.isFacingLeft()?180:0 : getAimAngle(this, holder), this.get_f32("attack_arc"), 12, this, @hitInfos))
 				{
 					for (uint i = 0; i < hitInfos.length; i++)
 					{
@@ -66,9 +68,4 @@ void onTick(CBlob@ this)
 			}
 		}
 	}
-}
-
-f32 getAimAngle(CBlob@ this, CBlob@ holder)
-{
-	return -(holder.getAimPos() - this.getPosition()).Angle();
 }
