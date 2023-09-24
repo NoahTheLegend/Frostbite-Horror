@@ -1,9 +1,9 @@
 #define SERVER_ONLY
 #include "CustomBlocks.as";
 
-array<bool> tile_map();
-const u16 max_steps_per_tick = 100;
-const u32 max_length = 1000;
+array<u8> tile_map();
+const u16 max_steps_per_tick = 50;
+const u32 max_length = 5000; // it is shorter so uh dont count this for tiles 
 const Vec2f debug_area = Vec2f(20, 20);
 
 void onInit(CRules@ this)
@@ -25,7 +25,7 @@ void Reset(CRules@ this)
         return;
     }
 
-    array<bool> new_tile_map(map.tilemapwidth*map.tilemapheight);
+    array<u8> new_tile_map(map.tilemapwidth*map.tilemapheight);
 	tile_map = new_tile_map;
 }
 
@@ -42,7 +42,7 @@ void onSetTile(CMap@ map, u32 index, TileType new_tile, TileType old_tile)
     //if (!old_solid || new_solid) return;
     if (!old_solid) return;
 
-    flood_order.push_back(index);
+    flood_order.push_back(index); // put recent block in the list
 }
 
 u32[] list = {};
@@ -50,44 +50,44 @@ u32[] flood_order = {};
 u32 start_index = 0;
 int length = max_length;
 int steps_remaining = max_steps_per_tick;
+bool reverse = false;
 
 void onTick(CRules@ this)
 {
     CMap@ map = getMap();
     if (map is null) return;
 
-    if (list.size() == 0)
+    if (list.size() == 0 && flood_order.size() > 0) // start new flood if list is empty and we have one waiting
     {
         ResetFlood();
-        for (u16 i = 0; i < flood_order.size(); i++)
-        {
-            start_index = flood_order[flood_order.size()-1];
-            length = max_length;
-
-            flood_order.erase(flood_order.size()-1);
-        }
+        start_index = flood_order[flood_order.size()-1];
+        length = max_length;
+        reverse = false;
+        flood_order.erase(flood_order.size()-1);
     }
 
-    if (start_index != 0)
+    if (start_index != 0) // new startpos is assigned from the order
     {
-        list.push_back(start_index);
-        start_index = 0;
+        list.push_back(start_index); // assign an entry equal to startpos before loop
+        start_index = 0; // reset startpos so it won't add more next ticks
 
         while (list.size() != 0)
         {
+            if (length == 0) reverse = true; // reverse if we didn't close the flood and we can't see further
+
             u32 step = list[0];
-            if (tile_map[step])
+            if (reverse ? tile_map[step] == 0 : tile_map[step] != 0) // this is necessary trust me
             {
                 list.erase(0);
                 continue;
             }
 
-            if (length > 0)
+            if (length > 0 || reverse)
             {
                 u32 up = step - map.tilemapwidth;
                 if (FloodValidation(map, up))
                     list.push_back(up); length--;
-
+                
                 u32 right = step + 1;
                 if (FloodValidation(map, right))
                     list.push_back(right); length--;
@@ -102,9 +102,9 @@ void onTick(CRules@ this)
             }
 
             Vec2f pos = map.getTileWorldPosition(step);
-            tile_map[step] = true;
+            tile_map[step] = reverse ? 0 : 255; // todo: count exposures to set relative temperature near them
 
-            if (steps_remaining == 0)
+            if (steps_remaining == 0) // save for next tick if we exhausted the limit
             {
                 start_index = step;
                 steps_remaining = max_steps_per_tick;
@@ -127,11 +127,14 @@ void ResetFlood()
 bool FloodValidation(CMap@ map, u32 index)
 {
     TileType tile = map.getTile(index).type;
-    bool isroom = tile_map[index];
+    bool isroom = tile_map[index] != 0;
     bool exposure = isTileExposure(tile);
     bool solid = isSolid(map, tile);
+
+    if (exposure) reverse = true; steps_remaining = 0; // gotta send it for next tick, otherwise bug
+
     //printf(index+" "+isroom+" > "+exposure+" > "+solid);
-    return !isroom && !exposure && !solid;
+    return reverse ? isroom : (!isroom && !exposure && !solid);
 }
 
 void onRender(CRules@ this) // debug
@@ -146,7 +149,11 @@ void onRender(CRules@ this) // debug
     Vec2f pos = getControls().getMouseWorldPos()+Vec2f(8, 8);
     Vec2f area = debug_area;
     int room_count = 0;
+    
     GUI::SetFont("menu");
+    GUI::DrawText("list size: "+list.size()+"\nindex: "+start_index+"\nlength: "+length+"\nflood order size: "+flood_order.size()+"\nroom count: "+room_count,
+        Vec2f(15, 50), SColor(255, 255, 255, 25));
+    GUI::SetFont("default");
 
     for (u32 i = 0; i < area.x * area.y; i++)
     {
@@ -156,7 +163,7 @@ void onRender(CRules@ this) // debug
 
         SColor color = SColor(125, 255, 25, 25);
         u32 offset = map.getTileOffset(centralized_pos);
-        bool has_room = tile_map[offset];
+        bool has_room = tile_map[offset] != 0;
 
         if (has_room)
         {
@@ -167,6 +174,4 @@ void onRender(CRules@ this) // debug
         GUI::DrawRectangle(screen_pos-Vec2f(4,4), screen_pos+Vec2f(4,4), color);
         if (i == 0) GUI::DrawTextCentered(offset+"", screen_pos-Vec2f(4,2), SColor(155, 255, 255, 0));
     }
-    GUI::DrawText("list size: "+list.size()+"\nindex: "+start_index+"\nlength: "+length+"\nflood order size: "+flood_order.size()+"\nroom count: "+room_count,
-        Vec2f(15, 50), SColor(155, 255, 255, 25));
 }

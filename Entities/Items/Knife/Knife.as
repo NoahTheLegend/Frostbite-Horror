@@ -22,6 +22,9 @@ void onInit(CBlob@ this)
 	this.Tag("hit_only_flesh");
 	this.set_u8("attack_types_amount", 2);
 
+	this.set_f32("rotation_mod", 5);
+	this.Tag("sharp");
+
 	CSprite@ sprite = this.getSprite();
 	if (sprite is null) return;
 	sprite.ScaleBy(Vec2f(0.85f, 0.75f));
