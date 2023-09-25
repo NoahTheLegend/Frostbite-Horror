@@ -37,7 +37,8 @@ void onTick(CBlob@ this)
         if (current_delay != -5) return; // compensate time for returning visuals into initial state
 
         const bool a1 = point.isKeyPressed(key_action1);
-		
+		this.set_bool("a1", a1);
+
 		if (getKnocked(holder) <= 0) // do not attack if we have a stun
 		{		
 			if (a1)

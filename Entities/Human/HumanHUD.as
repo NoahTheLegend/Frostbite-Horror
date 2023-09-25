@@ -36,11 +36,57 @@ void ManageCursors(CBlob@ this)
 	}
 
 	Vec2f mpos = getControls().getInterpMouseScreenPos();
-	Vec2f offset = Vec2f(-1, -2);
-	f32 scale = 0.5f * cl_mouse_scale / 2;
+	Vec2f offset = Vec2f(-3, -2);
+
+	u8 frame = getCursorFrame(this, mpos);
+	f32 scale = getScaleFactor(frame) * cl_mouse_scale / 2;
+
+	bool a1 = this.isKeyPressed(key_action1);
+	AttachmentPoint@ ap = this.getAttachments().getAttachmentPointByName("PICKUP");
+	if (ap !is null && ap.getOccupied() !is null && ap.getOccupied().get_bool("a1"))
+		a1 = true;
 
 	this.set_u8("current_alpha", v);
-	GUI::DrawIcon("HumanCursor.png", 0, Vec2f(25, 27), mpos+offset, scale, SColor(Maths::Max(155,v), v, v, v));
+	GUI::DrawIcon("HumanCursor.png", a1 ? frame+1 : frame, Vec2f(32, 32), mpos+offset, scale, SColor(Maths::Max(155,v), v, v, v));
+}
+
+u8 getCursorFrame(CBlob@ this, Vec2f mpos)
+{
+	if (this.hasTag("carrying_sharp")) return 2;
+	return 0;
+}
+
+void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint@ ap)
+{
+	if (attached !is null)
+	{
+		if (attached.hasTag("sharp")) this.Tag("carrying_sharp");
+	}
+}
+
+void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ ap)
+{
+	if (detached !is null)
+	{
+		if (detached.hasTag("sharp")) this.Untag("carrying_sharp");
+	}
+}
+
+
+f32 getScaleFactor(u8 frame)
+{
+	switch (frame)
+	{
+		case 0:
+		case 1:
+			return 0.5f;
+		
+		case 2:
+		case 3:
+			return 0.75f;
+	}
+
+	return 0.75f;
 }
 
 void RenderHumanCursor(int id)

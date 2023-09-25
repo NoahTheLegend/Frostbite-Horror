@@ -3,7 +3,7 @@
 
 array<u8> tile_map();
 const u16 max_steps_per_tick = 50;
-const u32 max_length = 500; // it is shorter so uh dont count this for tiles 
+const u32 max_length = 1000; // it is shorter so uh dont count this for tiles 
 const Vec2f debug_area = Vec2f(20, 20);
 
 void onInit(CRules@ this)
@@ -49,6 +49,7 @@ u32[] list = {};
 u32[] flood_order = {};
 u32 start_index = 0;
 int length = max_length;
+int current_length = 0;
 int steps_remaining = max_steps_per_tick;
 bool reverse = false;
 u32 steps_done = 0;
@@ -62,7 +63,6 @@ void onTick(CRules@ this)
     {
         ResetFlood();
         start_index = flood_order[flood_order.size()-1];
-        length = max_length;
         reverse = false;
         flood_order.erase(flood_order.size()-1);
     }
@@ -75,7 +75,7 @@ void onTick(CRules@ this)
         while (list.size() != 0)
         {
             steps_done++;
-            if (length == 0) reverse = true; // reverse if we didn't close the flood and we can't see further
+            if (current_length > length) reverse = true; // reverse if we didn't close the flood and we can't see further
             
             u32 step = list[0];
             if (reverse ? tile_map[step] == 0 : tile_map[step] != 0) // this is necessary trust me
@@ -90,33 +90,30 @@ void onTick(CRules@ this)
                 if (FloodValidation(map, up))
                 {
                     list.push_back(up);
-                    length--;
                 }
                 
                 u32 right = step + 1;
                 if (FloodValidation(map, right))
                 {
                     list.push_back(right);
-                    length--;
                 }
 
                 u32 down = step + map.tilemapwidth;
                 if (FloodValidation(map, down))
                 {
                     list.push_back(down);
-                    length--;
                 }
 
                 u32 left = step - 1;
                 if (FloodValidation(map, left))
                 {
                     list.push_back(left);
-                    length--;
                 }
             }
 
             Vec2f pos = map.getTileWorldPosition(step);
             tile_map[step] = reverse ? 0 : 255; // todo: count exposures to set relative temperature near them
+            current_length++;
             list.erase(0);
 
             if (steps_remaining == 0) // save for next tick if we exhausted the limit
@@ -137,6 +134,7 @@ void ResetFlood()
     list = array<u32>();
     start_index = 0;
     length = max_length;
+    current_length = 0;
 }
 
 bool FloodValidation(CMap@ map, u32 index)
@@ -158,6 +156,7 @@ bool FloodValidation(CMap@ map, u32 index)
 
 void onRender(CRules@ this) // debug
 {
+    if (!(isClient() && isServer())) return;
     if (tile_map.size() == 0) return;
     CMap@ map = getMap();
     if (map is null) return;
@@ -170,7 +169,7 @@ void onRender(CRules@ this) // debug
     int room_count = 0;
     
     GUI::SetFont("menu");
-    GUI::DrawText("list size: "+list.size()+"\nindex: "+start_index+"\nlength: "+length+"\nflood order size: "+flood_order.size()+"\nroom count: "+room_count+"\nsteps in last tick: "+steps_done,
+    GUI::DrawText("list size: "+list.size()+"\nindex: "+start_index+"\nflood order size: "+flood_order.size()+"\nroom count: "+room_count+"\nsteps in last tick: "+steps_done+"\nremaining: "+(length-current_length),
         Vec2f(15, 50), SColor(255, 255, 255, 25));
     GUI::SetFont("default");
 
