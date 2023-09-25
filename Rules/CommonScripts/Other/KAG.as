@@ -5,7 +5,7 @@
 #include "CustomBlocks.as"
 
 // chat bubble & same for ingame chat
-const u8 font0_size = 18;
+const u8 font0_size = 12;
 const string font0_name = "RockwellMT";
 const bool font0_antialiasing = true;
 

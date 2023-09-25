@@ -33,7 +33,7 @@ void onInit(CBlob@ this)
 	this.getCurrentScript().runFlags |= Script::tick_not_attached;
 	this.getCurrentScript().removeIfTag = "dead";
 
-	this.SetChatBubbleFont("RockwellMT_18");
+	this.SetChatBubbleFont("RockwellMT_12");
 	this.maxChatBubbleLines = 2;
 }
 
