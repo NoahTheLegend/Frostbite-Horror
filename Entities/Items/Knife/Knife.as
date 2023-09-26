@@ -24,6 +24,7 @@ void onInit(CBlob@ this)
 
 	this.set_f32("rotation_mod", 5);
 	this.Tag("sharp");
+	this.Tag("tool");
 	this.Tag("side_attack"); // hit only left or right
 	this.set_f32("attack_arc", 45);
 
