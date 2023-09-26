@@ -78,44 +78,52 @@ void onTick(CRules@ this)
             if (current_length > length) reverse = true; // reverse if we didn't close the flood and we can't see further
             
             u32 step = list[0];
+
+            bool exposure = isTileExposure(map.getTile(step).type);
+            if (exposure)
+            {
+                reverse = true;
+                steps_remaining = 0; // gotta send it for next tick, otherwise bug
+            }
+
             if (reverse ? tile_map[step] == 0 : tile_map[step] != 0) // this is necessary trust me
             {
                 list.erase(0);
                 continue;
             }
 
+            Vec2f pos = map.getTileWorldPosition(step);
             if (length > 0 || reverse)
             {
                 u32 up = step - map.tilemapwidth;
-                if (FloodValidation(map, up))
+                if (FloodValidation(map, pos, up))
                 {
                     list.push_back(up);
                 }
                 
                 u32 right = step + 1;
-                if (FloodValidation(map, right))
+                if (FloodValidation(map, pos, right))
                 {
                     list.push_back(right);
                 }
 
                 u32 down = step + map.tilemapwidth;
-                if (FloodValidation(map, down))
+                if (FloodValidation(map, pos, down))
                 {
                     list.push_back(down);
                 }
 
                 u32 left = step - 1;
-                if (FloodValidation(map, left))
+                if (FloodValidation(map, pos, left))
                 {
                     list.push_back(left);
                 }
             }
 
-            Vec2f pos = map.getTileWorldPosition(step);
             tile_map[step] = reverse ? 0 : 255; // todo: count exposures to set relative temperature near them
             current_length++;
             list.erase(0);
-
+            
             if (steps_remaining == 0) // save for next tick if we exhausted the limit
             {
                 steps_done = 0;
@@ -137,21 +145,26 @@ void ResetFlood()
     current_length = 0;
 }
 
-bool FloodValidation(CMap@ map, u32 index)
+bool FloodValidation(CMap@ map, Vec2f pos, u32 index)
 {
     TileType tile = map.getTile(index).type;
     bool isroom = tile_map[index] != 0;
-    bool exposure = isTileExposure(tile);
+    
     bool solid = isSolid(map, tile);
+    bool solidblob = false;
 
-    if (exposure)
+    pos = pos + Vec2f(4, 4);
+    CBlob@[] blobs;
+    map.getBlobsAtPosition(pos, @blobs);
     {
-        reverse = true;
-        steps_remaining = 0; // gotta send it for next tick, otherwise bug
+        for (u8 i = 0; i < blobs.size(); i++)
+        {
+            solidblob = blobs[i] !is null
+                && (blobs[i].hasTag("solid") || blobs[i].hasTag("door"));
+        }
     }
 
-    //printf(index+" "+isroom+" > "+exposure+" > "+solid);
-    return reverse ? isroom : (!isroom && !exposure && !solid);
+    return reverse ? isroom : (!isroom && !solid && !solidblob);
 }
 
 void onRender(CRules@ this) // debug
