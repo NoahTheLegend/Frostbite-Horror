@@ -18,6 +18,8 @@ void onInit(CBlob@ this)
 	// this.getSprite().addAnimation("honk", 0, false);
 
 	this.set_bool("holding", false);
+	
+	if (isServer()) this.server_setTeamNum(XORRandom(8));
 }
 
 void onTick(CBlob@ this)
@@ -84,16 +86,4 @@ void onTick(CBlob@ this)
 			}
 		}
 	}
-}
-
-void onDetach(CBlob@ this,CBlob@ detached,AttachmentPoint@ attachedPoint)
-{
-	detached.Untag("noLMB");
-	// detached.Untag("noShielding");
-}
-
-void onAttach( CBlob@ this, CBlob@ attached, AttachmentPoint @attachedPoint )
-{
-	attached.Tag("noLMB");
-	// attached.Tag("noShielding");
 }
