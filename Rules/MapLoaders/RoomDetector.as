@@ -2,7 +2,7 @@
 #include "CustomBlocks.as";
 
 array<u8> tile_map();
-const u16 max_steps_per_tick = 50;
+const u16 max_steps_per_tick = 2;
 const u32 max_length = 1000; // it is shorter so uh dont count this for tiles 
 const Vec2f debug_area = Vec2f(20, 20);
 
@@ -79,13 +79,6 @@ void onTick(CRules@ this)
             
             u32 step = list[0];
 
-            bool exposure = isTileExposure(map.getTile(step).type);
-            if (exposure)
-            {
-                reverse = true;
-                steps_remaining = 0; // gotta send it for next tick, otherwise bug
-            }
-
             if (reverse ? tile_map[step] == 0 : tile_map[step] != 0) // this is necessary trust me
             {
                 list.erase(0);
@@ -123,6 +116,10 @@ void onTick(CRules@ this)
             tile_map[step] = reverse ? 0 : 255; // todo: count exposures to set relative temperature near them
             current_length++;
             list.erase(0);
+
+            bool exposure = isTileExposure(map.getTile(step).type);
+            if (exposure)
+                reverse = true;
             
             if (steps_remaining == 0) // save for next tick if we exhausted the limit
             {
