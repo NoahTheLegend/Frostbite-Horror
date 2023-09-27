@@ -2,6 +2,7 @@
 
 void onInit(CRules@ this)
 {
+	
 }
 
 void onRender(CRules@ this)
