@@ -147,7 +147,7 @@ void onTick(CMovement@ this)
 
 	shape.SetGravityScale(1.0f);
 	shape.getVars().onladder = false;
-
+	
 	//swimming - overrides other movement partially
 	if (blob.isInWater() && !isknocked)
 	{

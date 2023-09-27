@@ -178,7 +178,7 @@ namespace CMap
 bool isSolid(CMap@ map, u32 type)
 {
 	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedStone(type) || isTileCaution(type)
-		|| isTileSnow(type) || isTileIce(type) || isTileElderBrick(type);
+		|| isTileSnow(type) || isTileIce(type) || isTileElderBrick(type) || isTileSnowBricks(type);
 }
 
 bool isSolid(CMap@ map, Vec2f pos)
