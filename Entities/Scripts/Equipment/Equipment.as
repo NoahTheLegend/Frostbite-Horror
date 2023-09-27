@@ -1,5 +1,6 @@
 #include "RunnerCommon.as"
 #include "EquipmentCommon.as"
+#include "RunnerHead.as"
 
 // Made by GoldenGuy 
 
@@ -11,6 +12,11 @@ void onInit(CBlob@ this)
 	this.addCommandID("equip_torso");
 	this.addCommandID("equip_boots");
 	this.addCommandID("none");
+
+	this.addCommandID("switch_hood");
+	this.addCommandID("sync");
+	
+	this.set_bool("wear_hood", false);
 }
 
 void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
@@ -99,7 +105,7 @@ void onCreateInventoryMenu(CBlob@ this, CBlob@ forBlob, CGridMenu@ gridmenu)
 
 		if (this !is null)
 		{
-			CGridButton@ head = extraequipments.AddButton("$decor_headimage$", "", this.getCommandID("none"), Vec2f(1, 1), params);
+			CGridButton@ head = extraequipments.AddButton("$decor_headimage$", "", this.getCommandID("switch_hood"), Vec2f(1, 1), params);
 			if (head !is null)
 			{
 				head.SetHoverText("Hood\n");
@@ -168,6 +174,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		}
 
 		caller.ClearMenus();
+	}
+	else if (cmd == this.getCommandID("switch_hood"))
+	{
+		bool wearing_hood = this.get_bool("wear_hood");
+		this.set_bool("wear_hood", !wearing_hood);
+
+		if (this.isMyPlayer() && this.getSprite() !is null)
+			this.getSprite().PlaySound("CycleInventory.ogg", 1.0f, 1.1f);
 	}
 }
 

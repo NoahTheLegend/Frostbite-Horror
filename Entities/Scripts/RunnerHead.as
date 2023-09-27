@@ -99,10 +99,30 @@ void onPlayerInfoChanged(CSprite@ this)
 	LoadHead(this, this.getBlob().getHeadNum());
 }
 
+void LoadHood(CSprite@ this, CBlob@ blob)
+{
+	CSpriteLayer@ hood = this.addSpriteLayer("hood", "HoodHead.png", 16, 16, blob.getTeamNum(), 0);
+	if (hood !is null)
+	{
+		hood.SetVisible(false);
+
+		Animation@ anim = hood.addAnimation("default", 0, false);
+		if (anim !is null)
+		{
+			int[] frames = {0,1,2};
+			anim.AddFrames(frames);
+			
+			hood.SetAnimation(anim);
+		}
+	}
+}
+
 CSpriteLayer@ LoadHead(CSprite@ this, int headIndex)
 {
 	CBlob@ blob = this.getBlob();
 	CPlayer@ player = blob.getPlayer();
+
+	LoadHood(this, blob);
 
 	// strip old head
 	this.RemoveSpriteLayer("head");
@@ -198,6 +218,7 @@ void onGib(CSprite@ this)
 void onTick(CSprite@ this)
 {
 	CBlob@ blob = this.getBlob();
+	if (blob is null) return;
 
 	ScriptData@ script = this.getCurrentScript();
 	if (script is null)
@@ -212,9 +233,10 @@ void onTick(CSprite@ this)
 		script.tickFrequency = 1;
 	}
 
-
 	// head animations
 	CSpriteLayer@ head = this.getSpriteLayer("head");
+	CSpriteLayer@ hood = this.getSpriteLayer("hood");
+	bool wear_hood = blob.get_bool("wear_hood");
 
 	// load head when player is set or it is AI
 	if (head is null && (blob.getPlayer() !is null || (blob.getBrain() !is null && blob.getBrain().isActive()) || blob.getTickSinceCreated() > 3))
@@ -222,7 +244,7 @@ void onTick(CSprite@ this)
 		@head = LoadHead(this, blob.getHeadNum());
 	}
 
-	if (head !is null)
+	if (head !is null && hood !is null)
 	{
 		Vec2f offset;
 
@@ -250,10 +272,12 @@ void onTick(CSprite@ this)
 		headoffset += Vec2f(-offset.x, offset.y);
 		headoffset += Vec2f(0, -2);
 		head.SetOffset(headoffset);
+		hood.SetOffset(headoffset);
 
 		if (blob.hasTag("dead") || blob.hasTag("dead head"))
 		{
 			head.animation.frame = 2;
+			hood.animation.frame = 2;
 
 			// sparkle blood if cut throat
 			if (getNet().isClient() && getGameTime() % 2 == 0 && blob.hasTag("cutthroat"))
@@ -267,10 +291,15 @@ void onTick(CSprite@ this)
 		else if (blob.hasTag("attack head"))
 		{
 			head.animation.frame = 1;
+			hood.animation.frame = 1;
 		}
 		else
 		{
 			head.animation.frame = 0;
+			hood.animation.frame = 0;
 		}
+
+		head.SetVisible(!wear_hood);
+		hood.SetVisible(wear_hood);
 	}
 }
