@@ -35,10 +35,16 @@ void onTick(CSprite@ this)
 
 	if (timer < 0)
 	{
+		if (this.animation.name != "end") this.PlaySound("ExtinguishFire.ogg", 1.0f, 0.85f);
 		this.SetAnimation("end");
+		this.SetEmitSoundPaused(true);
 		return;
 	}
-	else this.SetAnimation("activate");
+	else
+	{
+		this.SetEmitSoundSpeed(1.0f+XORRandom(51)*0.001f);
+		this.SetAnimation("activate");
+	}
 }
 
 void onTick(CBlob@ this)
@@ -54,7 +60,11 @@ void onTick(CBlob@ this)
 		this.Tag("extinguished");
 	}
 
-	MakeParticle(this, Vec2f(0, 0.5f - XORRandom(11)*0.1f), "RedFlareFire"+XORRandom(2));
+	if (isClient())
+	{
+		MakeParticle(this, Vec2f(0, 0.5f - XORRandom(11)*0.1f), "RedFlareFire"+XORRandom(2));
+		MakeParticle(this, Vec2f(0, 0.1f - XORRandom(5)*0.1f), "RedFlareGas");
+	}
 }
 
 void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
@@ -63,6 +73,19 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	{
 		this.Tag("activated");
 		this.set_s32("timer", getGameTime() + duration);
+
+		if (isClient())
+		{
+			CSprite@ sprite = this.getSprite();
+			if (sprite !is null)
+			{
+				sprite.SetEmitSound("FlareLoop.ogg");
+				sprite.SetEmitSoundVolume(0.66f);
+				sprite.SetEmitSoundPaused(false);
+
+				sprite.PlaySound("FlareStart.ogg", 1.5f, 0.9f);
+			}
+		}
 	}
 	else if (cmd == this.getCommandID("sync"))
 	{
@@ -81,6 +104,14 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		{
 			s32 timer = params.read_s32();
 			this.set_s32("timer", timer);
+
+			CSprite@ sprite = this.getSprite();
+			if (sprite !is null)
+			{
+				sprite.SetEmitSound("FlareLoop.ogg");
+				sprite.SetEmitSoundVolume(0.66f);
+				sprite.SetEmitSoundPaused(false);
+			}
 		}
 	}
 }
@@ -93,8 +124,11 @@ void MakeParticle(CBlob@ this, const Vec2f vel, const string filename = "SmallSt
 	CParticle@ p = ParticleAnimated(filename, this.getPosition() + offset, vel, float(XORRandom(360)), 1.0f, 2 + XORRandom(3), -0.1f, false);
 	if (p !is null)
 	{
-		//p.collides = true;
-		//p.diesoncollide = false;
+		p.deadeffect = -1;
+		p.timeout = 30;
+		p.collides = true;
+		p.diesoncollide = false;
+		p.diesonanimate = false;
 		p.windaffect = 5.0f;
 		p.setRenderStyle(RenderStyle::additive);
 	}

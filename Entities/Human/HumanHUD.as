@@ -155,6 +155,8 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ ap)
 	if (detached !is null)
 	{
 		if (detached.hasTag("sharp")) this.Untag("carrying_sharp");
+		else if (detached.hasTag("pickaxe")) this.Untag("carrying_pickaxe");
+		else if (detached.hasTag("axe")) this.Untag("carrying_axe");
 	}
 }
 
