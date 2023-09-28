@@ -3,8 +3,8 @@
 
 #define SERVER_ONLY
 
-const u16 day_speed = 10; // the more the value, the slower it is going
-const u16 night_speed = 45;
+const u16 day_speed = 20; // the bigger the value, the slower it is going
+const u16 night_speed = 80;
 
 #include "CTF_Structs.as";
 #include "RulesCore.as";
