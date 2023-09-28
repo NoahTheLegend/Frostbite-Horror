@@ -110,7 +110,7 @@ TileType server_onTileHit(CMap@ map, f32 damage, u32 index, TileType oldTileType
 				return oldTileType + 1;
 
 			case CMap::tile_ice_d3:
-				return CMap::tile_ground_back;
+				return CMap::tile_empty;
 
 			// snow bricks
 			case CMap::tile_snow_bricks:

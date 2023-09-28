@@ -39,6 +39,6 @@ void onInit(CMovement@ this)
 	moveVars.stoppingForceAirFactor = 1.0f;
 	//other
 	this.getBlob().set("moveVars", moveVars);
-	this.getBlob().getShape().getVars().waterDragScale = 30.0f;
+	this.getBlob().getShape().getVars().waterDragScale = 60.0f;
 	this.getBlob().getShape().getConsts().collideWhenAttached = true;
 }

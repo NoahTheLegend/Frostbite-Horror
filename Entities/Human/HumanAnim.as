@@ -117,11 +117,11 @@ void onTick(CSprite@ this)
 				this.animation.timer = 0;
 				bool inwater = blob.isInWater();
 
-				if (vy < -1.5 * (inwater ? 0.7 : 1))
+				if (vy < -1.5 * (inwater ? 0.2 : 1))
 				{
 					this.animation.frame = 0;
 				}
-				else if (vy > 1.5 * (inwater ? 0.7 : 1))
+				else if (vy > 1.5 * (inwater ? 0.2 : 1))
 				{
 					this.animation.frame = 2;
 				}
