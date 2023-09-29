@@ -4,11 +4,6 @@
 #include "EmotesCommon.as"
 #include "CustomBlocks.as"
 
-// chat bubble & same for ingame chat
-const u8 font0_size = 14;
-const string font0_name = "RockwellMT";
-const bool font0_antialiasing = true;
-
 void onInit(CRules@ this)
 {
 	LoadDefaultMapLoaders();
@@ -102,13 +97,4 @@ void onExitChat(CRules @this)
 	CBlob@ localblob = getLocalPlayerBlob();
 	if (localblob !is null)
 		set_emoteByCommand(localblob, "");
-}
-
-void onRender(CRules@ this)
-{
-	if (!GUI::isFontLoaded(font0_name+"_"+font0_size))
-	{
-		string font = CFileMatcher(font0_name+".ttf").getFirst();
-		GUI::LoadFont(font0_name+"_"+font0_size, font, font0_size, font0_antialiasing);
-	}
 }

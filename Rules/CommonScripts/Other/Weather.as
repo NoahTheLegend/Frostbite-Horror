@@ -3,6 +3,7 @@
 
 void onInit(CRules@ this)
 {
+    this.set_u16("day", 0);
     Reset(this);
 }
 
@@ -18,11 +19,17 @@ void Reset(CRules@ this)
     period = 0;
     blizzard_strength_factor = 1.0f;
     bias = 0;
+    date_coldness = XORRandom(temp_date_deviation_max*10)/10;
+
+    this.set_u16("day", XORRandom(356));
+    this.set_f32("temperature", temp_global);
 }
 
 f32 time_mod = 0;
 f32 blizzard_strength_factor = 1.0f;
 f32 bias = 0;
+bool newday = false;
+f32 date_coldness = 0;
 
 void onTick(CRules@ this)
 {
@@ -35,6 +42,24 @@ void onTick(CRules@ this)
     f32 t = map.getDayTime();
     if (t == mdt) return;
 
+    // date cycle
+    if (t <= 0.5f)
+    {
+        if (newday)
+        {
+            this.add_u16("day", 1);
+            if (this.get_u16("day") > 356) this.set_u16("day", 0);
+
+            if (XORRandom(100) < temp_date_deviation_chance)
+                date_coldness = Maths::Min(temp_date_deviation_max, date_coldness + XORRandom(temp_date_deviation*10)/10);
+            else
+                date_coldness = Maths::Max(0, date_coldness - XORRandom(temp_date_deviation*10)/10);
+
+            newday = false;
+        }
+    }
+    else newday = true;
+    
     // init
     f32 temp_current = temp_global;
 
@@ -65,12 +90,13 @@ void onTick(CRules@ this)
     else temp_current -= (temp_change_amount*blizzard_strength_factor) + time_mod;
     temp_current = -1.0f * Maths::Abs(temp_current);
     // calculate min-max
-    f32 max = blizzard_strength_factor * ((temp_max + rnd) - (d?bias:0));
-    f32 min = blizzard_strength_factor * (temp_min - rnd);
+    f32 max = blizzard_strength_factor * (((temp_max + rnd) - (d?bias:0)) - date_coldness);
+    f32 min = blizzard_strength_factor * ((temp_min - rnd) - date_coldness);
 
     // assign new step
     period = gt + (temp_change_period + XORRandom(temp_change_period_random))*30;
     temp_global = Maths::Min(max, Maths::Max(min, temp_current));
+    this.set_f32("temperature", temp_global);
 }
 
 void onRender(CRules@ this)
@@ -84,6 +110,6 @@ void onRender(CRules@ this)
 
     Vec2f pos = getControls().getMouseWorldPos()+Vec2f(8, 8);
     GUI::SetFont("menu");
-    GUI::DrawText("time mod\\time: "+time_mod+"\\"+map.getDayTime()+"\nperiod: "+period+"\nremaining: "+((period-getGameTime())/30)+"\ntemperature: "+temp_global+"\nbias: "+bias+"\nblizzard factor: "+blizzard_strength_factor,
+    GUI::DrawText("time mod | time | day: "+time_mod+" | "+map.getDayTime()+" | "+this.get_u16("day")+"\nperiod: "+period+"\nremaining: "+((period-getGameTime())/30)+"\ntemperature: "+temp_global+"\ndate coldness: "+date_coldness+"\nbias: "+bias+"\nblizzard factor: "+blizzard_strength_factor,
         Vec2f(15, 50), SColor(255, 255, 255, 25));
 }
