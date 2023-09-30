@@ -4,6 +4,7 @@
 #include "ParticleSparks.as";
 #include "Hitters.as";
 #include "CustomBlocks.as";
+#include "ShadowCastHooks.as"
 
 const Vec2f[] directions =
 {
@@ -15,6 +16,13 @@ const Vec2f[] directions =
 
 bool onMapTileCollapse(CMap@ map, u32 offset)
 {
+	SET_TILE_CALLBACK@ set_tile_func;
+	getRules().get("SET_TILE_CALLBACK", @set_tile_func);
+	if (set_tile_func !is null)
+	{
+		set_tile_func(offset, 0);
+	}
+
 	Tile tile = map.getTile(offset);
 	if (isDummyTile(tile.type))
 	{
@@ -382,6 +390,13 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 {
 	Vec2f pos = map.getTileWorldPosition(index);
 
+	SET_TILE_CALLBACK@ set_tile_func;
+	getRules().get("SET_TILE_CALLBACK", @set_tile_func);
+	if( set_tile_func !is null )
+	{
+		set_tile_func(index, tile_new);
+	}
+
 	switch(tile_new)
 	{
 		case CMap::tile_empty:
@@ -516,11 +531,19 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_ice_v11:
 			case CMap::tile_ice_v12:
 			case CMap::tile_ice_v13:
+			{
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag(index, Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				
+				break;
+			}
 			case CMap::tile_ice_v14:
+			{
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
 				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
 				break;
+			}
 
 			case CMap::tile_ice_d0:
 			case CMap::tile_ice_d1:

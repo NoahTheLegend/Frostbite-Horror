@@ -12,6 +12,22 @@ bool LoadMap(CMap@ map, const string& in fileName)
 	PNGLoader loader();
 
 	MiniMap::Initialise();
+
+	bool load = loader.loadMap(map, fileName);
+
+	if (load)
+	{
+		MAP_LOAD_CALLBACK@ map_load_func;
+		getRules().get("MAP_LOAD_CALLBACK", @map_load_func);
+		if (map_load_func is null)
+		{
+			print("MAP_LOAD_CALLBACK function handle is null\n");
+		}
+		else
+		{
+			map_load_func(map.tilemapwidth, map.tilemapheight);
+		}
+	}
 	
-	return loader.loadMap(map, fileName);
+	return load;
 }

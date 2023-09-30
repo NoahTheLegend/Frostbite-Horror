@@ -181,6 +181,11 @@ bool isSolid(CMap@ map, u32 type)
 		|| isTileSnow(type) || isTileIce(type) || isTileElderBrick(type) || isTileSnowBricks(type);
 }
 
+bool isSolidNotIce(CMap@ map, u32 type)
+{
+	return !isTileIce(type) && isSolid(map, type);
+}
+
 bool isSolid(CMap@ map, Vec2f pos)
 {
 	u32 type = map.getTile(pos).type;

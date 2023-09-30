@@ -66,7 +66,7 @@ void DrawTemperature(CSprite@ this)
     SColor color_body = SColor(255,215,100,25);
 
     // canvas
-    GUI::DrawPane(Vec2f(drawpos.x, height-cdim.y), Vec2f(cdim.x, height+10), SColor(hud_transparency,255,255,255));
+    GUI::DrawPane(Vec2f(drawpos.x, height-cdim.y), Vec2f(cdim.x, height+15), SColor(hud_transparency,255,255,255));
     // details
     if (cdim.x > 60) GUI::DrawPane(Vec2f(60, height-cdim.y+10), Vec2f(cdim.x-10, height-146), SColor(hud_transparency,255,255,255));
     GUI::DrawFramedPane(Vec2f(cdim.x-15, height-cdim.y+5), Vec2f(cdim.x, height-140));
