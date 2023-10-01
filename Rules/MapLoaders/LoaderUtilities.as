@@ -539,6 +539,11 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			}
 			case CMap::tile_ice_v14:
 			{
+				bool mirror = (XORRandom(2)==0);
+				bool flip = (XORRandom(2)==0);
+
+				if (mirror) map.AddTileFlag(index, Tile::MIRROR);
+				if (flip) map.AddTileFlag(index, Tile::FLIP);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
 				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
