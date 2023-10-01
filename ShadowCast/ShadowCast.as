@@ -16,7 +16,7 @@ bool texture_added = false; // thanks vamist
 
 void onReload(CRules@ this)
 {
-    print("-------SHADOWCAST INIT-------");
+    //print("-------SHADOWCAST INIT-------");
     // set up hooks
     MAP_LOAD_CALLBACK@ map_load_func = @onMapLoad;
     this.set("MAP_LOAD_CALLBACK", @map_load_func);
@@ -123,7 +123,7 @@ void onTick(CRules@ this)
                 for(int i = 0; i < map_size; i++)
                 {
                     TileType t = map.getTile(i).type;
-                    solids[i] = isSolidNotIce(map, t) || !map.hasTileFlag(i, Tile::LIGHT_PASSES);
+                    solids[i] = isSolid(map, t);
                 }
                 solid_map = true;
             }
@@ -133,7 +133,7 @@ void onTick(CRules@ this)
                 chunk_update = true;
                 max_index = map_size;
             }
-            print("max_index: " + max_index);
+            //print("max_index: " + max_index);
             for(int i = last_index; i < max_index; i++)
             {
                 UpdateTileNum(map, i);
