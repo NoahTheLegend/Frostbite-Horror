@@ -3,7 +3,7 @@ u32 period = 0;
 f32 temp_global = temp_mid;
 const f32 temp_global_random = 10.0f;
 const f32 temp_max = -18.500f;
-const f32 temp_min = -54.000f;
+const f32 temp_min = -52.000f;
 const f32 temp_mid = -1.0f * Maths::Abs(temp_max-temp_min);
 const f32 temp_random = 4.0f;                        // randomly added in certain way
 // change period
