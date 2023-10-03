@@ -1,8 +1,37 @@
-#include "RadioMessage.as";
+#include "Messages.as";
 
 void onInit(CRules@ this)
 {
     int id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 50000);
+	
+	if (getLocalPlayer() !is null)
+	{
+		MessageBox setbox(10, Vec2f(300, 200), Vec2f(20, 15));
+		this.set("MessageBox", @setbox);
+	}
+}
+
+void onRestart(CRules@ this)
+{
+	if (isClient() && isServer())
+	{
+		onInit(this);
+	}
+}
+
+void onRender(CRules@ this)
+{
+	if (getLocalPlayer() !is null)
+	{
+		MessageBox@ box;
+    	if (this.get("MessageBox", @box))
+    	{
+    	    if (box !is null)
+    	    {
+    	        box.render();
+    	    }
+    	}
+	}
 }
 
 void RenderHumanCursor(int id)
@@ -22,6 +51,11 @@ void onTick(CRules@ this)
 void blobTick(CBlob@ this)
 {
 	ResetChecks();
+
+	if (this.isKeyJustPressed(key_action1))
+	{
+		addMessage("Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque"+XORRandom(999));
+	}
 
 	bool a1 = isAction(this);
 	this.set_bool("a1", a1);
