@@ -60,7 +60,6 @@ void Spectator(CRules@ this)
 				zoomTarget = 0.5f;
 
 		}
-
 	}
 	else
 	{

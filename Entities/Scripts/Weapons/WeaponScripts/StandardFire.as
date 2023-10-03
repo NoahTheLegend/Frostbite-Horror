@@ -76,7 +76,7 @@ void onInit(CBlob@ this)
 		if (bullet_vertex is null)
 		{
 			Vertex[] vert;
-			rules.set(vert_name, @vert);
+			rules.set(vert_name, vert);
 		}
 
 		// #blamekag
