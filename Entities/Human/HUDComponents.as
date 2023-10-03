@@ -181,7 +181,7 @@ void DrawPulse(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ controls, V
                 frame_order_icon.removeAt(0);
                 frame_order_icon.push_back(pulse_icon);
 
-                next = gt+pulse_tick_delay;
+                next = gt+pulse_tick_delay-(pulse_icon==3||pulse_icon==2?1:0);
             }
             actual_pulse_pos = p_drawpos;
         }
