@@ -26,7 +26,7 @@ void onInit(CSprite@ this)
 
 	blob.set_u8("gui_HUD_slots_width", slotsSize);
 	blob.set_u8("current_alpha", 255);
-	InitTemperatureComponent(blob);
+	InitComponents(blob);
 
 	if (!GUI::isFontLoaded(font0_name+"_"+font0_size))
 	{
@@ -44,7 +44,7 @@ void onInit(CSprite@ this)
 void onTick(CBlob@ this)
 {
 	getHUD().HideCursor();
-	UpdateTemperature(this);
+	UpdateComponents(this);
 }
 
 void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint@ ap)
@@ -69,26 +69,13 @@ void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ ap)
 
 void onRender(CSprite@ this)
 {
+	if (g_videorecording)
+		return;
+		
 	CBlob@ blob = getLocalPlayerBlob();
 	if (blob is null) return;
 
-	DrawTemperature(this);
-
-	if (g_videorecording)
-		return;
-
-	CPlayer@ player = blob.getPlayer();
-
-	// draw inventory
-	Vec2f tl = getActorHUDStartPosition(blob, slotsSize);
-	DrawInventoryOnHUD(blob, tl);
-
-	// draw coins
-	const int coins = player !is null ? player.getCoins() : 0;
-	DrawCoinsOnHUD(blob, coins, tl, slotsSize - 2);
-
-	// draw class icon
-	GUI::DrawIcon(iconsFilename, 3, Vec2f(16, 32), tl + Vec2f(8 + (slotsSize - 1) * 40, -13), 1.0f);
+	RenderComponents(this);
 }
 
 bool mouseHover(Vec2f mpos, Vec2f tl, Vec2f br)

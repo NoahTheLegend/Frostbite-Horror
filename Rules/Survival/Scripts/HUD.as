@@ -1,3 +1,5 @@
+#include "RadioMessage.as";
+
 void onInit(CRules@ this)
 {
     int id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 50000);
