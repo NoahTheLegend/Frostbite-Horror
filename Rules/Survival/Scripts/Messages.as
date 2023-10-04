@@ -1,3 +1,5 @@
+#include "Slider.as";
+
 const u16 scrw = getDriver().getScreenWidth();
 const u16 scrh = getDriver().getScreenHeight();
 
@@ -7,6 +9,8 @@ class Message
 {
     string text;
     string title;
+    string[] text_lines;
+    f32 height;
     bool playsound;
     u16 max_length;
     string text_to_show;
@@ -20,6 +24,8 @@ class Message
         playsound = _playsound;
         max_length = _max_length;
         delay = _delay;
+
+        height = 0;
         text_to_show = "";
         completed = false;
     }
@@ -46,6 +52,7 @@ class MessageBox
     Vec2f padding;
     u8 wait_time;
     f32 wrap_edge;
+    Slider slider;
 
     Vec2f tl;
     Vec2f br;
@@ -59,7 +66,9 @@ class MessageBox
 
         tl = Vec2f(scrw-dim.x, 0);
         br = Vec2f(scrw, dim.y);
-        wrap_edge = dim.x-padding.x*4;
+        wrap_edge = dim.x-padding.x*2;
+
+        slider = Slider("scroll", tl-Vec2f(15,0), Vec2f(15, dim.y), Vec2f(15,15), Vec2f(16,16), 1.0f, 5);
     }
 
     Message@[] order_list;
@@ -67,13 +76,13 @@ class MessageBox
 
     void addMessage(Message msg)
     {
-        
-
         this.order_list.push_back(msg);
     }
     
     void render()
     {
+        slider.render();
+
         GUI::SetFont("CascadiaCodePL_12");
         GUI::DrawPane(tl-Vec2f(0,10), br, SColor(hud_transparency,255,255,255));
         
@@ -88,23 +97,12 @@ class MessageBox
 
             if (wait_time == 0)
             {
-                msg.write();
-                wait_time = msg.delay;
-
-                if (msg.ended())
-                {
-                    if (history.size() > max_history_size)
-                    {
-                        history.removeAt(0);
-                    }
-                    
-                    history.insertAt(0, msg);
-                    order_list.removeAt(0);
-                }
+                this.write(msg);
             }
 
             Vec2f text_dim;
             GUI::GetTextDimensions(msg.text_to_show, text_dim);
+            msg.height = text_dim.y;
             
             u16 index = msg.text_to_show.size();
             if (text_dim.x > wrap_edge) // also test w\o spaces
@@ -112,7 +110,8 @@ class MessageBox
                 for (u16 i = 1; i < index; i++)
                 {
                     u16 check_index = index-i;
-                    if (msg.text_to_show.substr(check_index, 1) == " ")
+                    string wrap_line = msg.text_to_show.substr(check_index, 1);
+                    if (wrap_line == " ")
                     {
                         msg.text = msg.text.substr(0, check_index) + "\n" + msg.text.substr(check_index);
                         break;
@@ -122,23 +121,43 @@ class MessageBox
 
             GUI::DrawText(msg.text_to_show, br - Vec2f(dim.x, text_dim.y) + Vec2f(padding.x, -padding.y), color_white);
         }
-        
+        u16 lines_outbound = 0;
         f32 total_offset = 0;
         for (u8 i = 0; i < history.size(); i++)
         {
             Message@ msg = history[i];
-            Message@ showing = order_list.size() > 0 ? order_list[0] : null;
+            Message@ prev = order_list.size() > 0 ? order_list[0] : null;
 
-            Vec2f text_dim = Vec2f_zero;
-            GUI::GetTextDimensions(msg.text, text_dim);
+            f32 prev_height = 0;
+            if (prev !is null) prev_height = prev.height;
 
-            Vec2f showing_text_dim = Vec2f_zero;
-            if (showing !is null) GUI::GetTextDimensions(showing.text_to_show, showing_text_dim);
+            string newtext = "";
+            for (u8 j = 0; j < msg.text_lines.size(); j++)
+            {
+                newtext += msg.text_lines[j]+"\n";
+            }
 
-            GUI::DrawText(msg.text, br - Vec2f(dim.x, text_dim.y+total_offset+showing_text_dim.y) + Vec2f(padding.x, -padding.y), color_white);
-            total_offset += text_dim.y;
+            GUI::DrawText(newtext, br - Vec2f(dim.x, msg.height+total_offset+prev_height) + Vec2f(padding.x, -padding.y), color_white);
+            total_offset += msg.height;
         }
-        //GUI::DrawText(""+history.size(), tl + Vec2f(-20, 100), color_white);
+    }
+
+    void write(Message@ msg)
+    {
+        msg.write();
+        wait_time = msg.delay;
+
+        if (msg.ended())
+        {
+            if (history.size() > max_history_size)
+            {
+                history.removeAt(0);
+            }
+
+            msg.text_lines = msg.text.split("\n");
+            history.insertAt(0, msg);
+            order_list.removeAt(0);
+        }
     }
 };
 

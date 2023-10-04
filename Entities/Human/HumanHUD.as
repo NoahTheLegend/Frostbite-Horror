@@ -7,14 +7,8 @@
 const string iconsFilename = "HumanIcons.png";
 const int slotsSize = 6;
 
-// chat bubble & same for ingame chat
-const u8 font0_size = 14;
-const string font0_name = "RockwellMT";
-const bool font0_antialiasing = true;
-
-const u8 font1_size = 12;
-const string font1_name = "CascadiaCodePL";
-const bool font1_antialiasing = true;
+const u8[] font_sizes = {14,12,10};
+const string[] font_names = {"RockwellMT", "CascadiaCodePL", "CascadiaCodePL"};
 
 void onInit(CSprite@ this)
 {
@@ -28,16 +22,13 @@ void onInit(CSprite@ this)
 	blob.set_u8("current_alpha", 255);
 	InitComponents(blob);
 
-	if (!GUI::isFontLoaded(font0_name+"_"+font0_size))
+	for (u8 i = 0; i < font_names.length; i++)
 	{
-		string font = CFileMatcher(font0_name+".ttf").getFirst();
-		GUI::LoadFont(font0_name+"_"+font0_size, font, font0_size, font0_antialiasing);
-	}
-
-	if (!GUI::isFontLoaded(font1_name+"_"+font1_size))
-	{
-		string font = CFileMatcher(font1_name+".ttf").getFirst();
-		GUI::LoadFont(font1_name+"_"+font1_size, font, font1_size, font1_antialiasing);
+		if (!GUI::isFontLoaded(font_names[i]+"_"+font_sizes[i]))
+		{
+			string font = CFileMatcher(font_names[i]+".ttf").getFirst();
+			GUI::LoadFont(font_names[i]+"_"+font_sizes[i], font, font_sizes[i], true);
+		}
 	}
 }
 

@@ -11,6 +11,14 @@ void onInit(CRules@ this)
 	}
 }
 
+void onNewPlayerJoin(CRules@ this, CPlayer@ player)
+{
+	if (isClient() && isServer())
+	{
+		onInit(this);
+	}
+}
+
 void onRestart(CRules@ this)
 {
 	if (isClient() && isServer())
@@ -54,7 +62,7 @@ void blobTick(CBlob@ this)
 
 	if (this.isKeyJustPressed(key_action1))
 	{
-		addMessage("Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque"+XORRandom(999));
+		addMessage("one two three four five six seven eight nine ten eleven twelve thirteen fourteen"+XORRandom(999));
 	}
 
 	bool a1 = isAction(this);
