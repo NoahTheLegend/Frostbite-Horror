@@ -90,6 +90,11 @@ class Slider
         return Vec2f_zero;
     }
 
+    void setSnap(int snap)
+    {
+        snap_points = snap;
+    }
+
     Vec2f getNearestSnapPoint() // must include button pos properly to negate skipping snappoints if button is too big
     {
         Vec2f snap = getSnap();
