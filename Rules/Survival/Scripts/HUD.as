@@ -6,7 +6,7 @@ void onInit(CRules@ this)
 	
 	if (getLocalPlayer() !is null)
 	{
-		MessageBox setbox(10, Vec2f(300, 200), Vec2f(20, 15));
+		MessageBox setbox(10, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 16);
 		this.set("MessageBox", @setbox);
 	}
 }
@@ -62,7 +62,7 @@ void blobTick(CBlob@ this)
 
 	if (this.isKeyJustPressed(key_action1))
 	{
-		if (XORRandom(1) == 0) addMessage("one two THREE FOUR FIVE six seven eight nine ten eleven twelve thirteen fourteen"+XORRandom(999));
+		if (XORRandom(1) == 0) addMessage("onetwoTHREEFOURFIVEsixseveneightnineteneleventwelvethirteen fourteen fifteen"+XORRandom(999), formDefaultTitle(null));
 		else addMessage("one two THREE FOUR FIVE six seven eight nine ten eleven"+XORRandom(999));
 	}
 

@@ -109,10 +109,10 @@ class Slider
             && mpos.y >= edge_tl.y && mpos.y <= edge_br.y;
     }
 
-    void scrollBy(f32 dist) // positive/negative value corresponds by x and y axis
+    void scrollBy(f32 dist, const bool do_snap = false) // positive/negative value corresponds by x and y axis
     {
         Vec2f snap = getSnap();
-        Vec2f scroll_vec = Vec2f(dist, dist);
+        Vec2f scroll_vec = do_snap ? Vec2f(dist*snap.x, dist*snap.y) : Vec2f(dist, dist);
 
         if (snap_points > 0)
         {

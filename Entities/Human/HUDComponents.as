@@ -140,9 +140,9 @@ void DrawTemperature(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ contr
     u8 text_alpha = Maths::Lerp(bl_last_text_alpha, 255, 0.25f);
     bl_last_text_alpha = text_alpha;
 
-    GUI::SetFont("CascadiaCodePL_12");
-    GUI::DrawTextCentered(global_temperature+"°C", temperature_text_offset, SColor(text_alpha,255,255,255));
-    GUI::DrawTextCentered(global_temperature_f+"°F", temperature_text_offset+Vec2f(0,12), SColor(text_alpha,255,255,255));
+    //GUI::SetFont("CascadiaCodePL_12");
+    //GUI::DrawTextCentered(global_temperature+"°C", temperature_text_offset, SColor(text_alpha,255,255,255));
+    //GUI::DrawTextCentered(global_temperature_f+"°F", temperature_text_offset+Vec2f(0,12), SColor(text_alpha,255,255,255));
 }
 
 const Vec2f const_p_drawpos = Vec2f(const_t_drawpos)+Vec2f(135,115);
