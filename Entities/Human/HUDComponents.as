@@ -116,7 +116,6 @@ void DrawTemperature(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ contr
     GUI::DrawIcon("Thermometer.png", 2, Vec2f(24, 85*(1.0f-gauge_shift)), t_drawpos + Vec2f(0, gauge_offset+85*gauge_shift), 1.0f, 0.55f, color_global); // global temperature
     GUI::DrawIcon("Thermometer.png", 1, Vec2f(24, 85), t_drawpos, 1.0f, 1.0f, color_body); // body temperature
     GUI::DrawIcon("Thermometer.png", 0, Vec2f(24, 85), t_drawpos, 1.0f); // icon
-    GUI::DrawText("°F        °C", t_drawpos + Vec2f(-2, 6), SColor(255,0,0,0)); // metrics, dont wanna make another drawtext, count this as microoptimization
     
     // arrows
     s8 rate = blob.get_s8("temperature_rate");
@@ -140,9 +139,9 @@ void DrawTemperature(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ contr
     u8 text_alpha = Maths::Lerp(bl_last_text_alpha, 255, 0.25f);
     bl_last_text_alpha = text_alpha;
 
-    //GUI::SetFont("CascadiaCodePL_12");
-    //GUI::DrawTextCentered(global_temperature+"°C", temperature_text_offset, SColor(text_alpha,255,255,255));
-    //GUI::DrawTextCentered(global_temperature_f+"°F", temperature_text_offset+Vec2f(0,12), SColor(text_alpha,255,255,255));
+    GUI::SetFont("CascadiaCodePL_12");
+    GUI::DrawTextCentered(global_temperature+"°C", temperature_text_offset, SColor(text_alpha,255,255,255));
+    GUI::DrawTextCentered(global_temperature_f+"°F", temperature_text_offset+Vec2f(0,12), SColor(text_alpha,255,255,255));
 }
 
 const Vec2f const_p_drawpos = Vec2f(const_t_drawpos)+Vec2f(135,115);

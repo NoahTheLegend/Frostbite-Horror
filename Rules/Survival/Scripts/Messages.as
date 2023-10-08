@@ -10,24 +10,28 @@ class Message
 {
     string text;
     string title; // todo
+    u8 title_offset;
     string[] text_lines;
     f32 height;
     bool playsound; // todo
     u16 max_length; // todo
     string text_to_write;
     u8 delay;
+    u8 title_alpha;
 
     bool completed;
     Vec2f old_pos;
 
-    Message(string _text, string _title, bool _playsound = true, u16 _max_length = 255, u8 _delay = 1)
+    Message(string _text, string _title, u8 _title_offset = 4, bool _playsound = true, u16 _max_length = 255, u8 _delay = 1)
     {
         text = _text;
         title = _title;
+        title_offset = _title_offset;
         playsound = _playsound;
         max_length = _max_length;
         delay = _delay;
 
+        title_alpha = 55;
         height = 0;
         text_to_write = "";
         completed = false;
@@ -45,6 +49,11 @@ class Message
     {
         if (!completed) completed = text_to_write.size() == text.size();
         return completed;
+    }
+
+    void fadeIn(u8 fade)
+    {
+        this.title_alpha = Maths::Min(255, title_alpha+fade);
     }
 };
 
@@ -68,13 +77,13 @@ class MessageBox
         dim = _dim;
         padding = _padding;
         wait_time = 0;
-        message_gap = _message_gap;
+        message_gap = _message_gap; // applies if bigger than distance between last lines of messages
 
         tl = Vec2f(scrw-dim.x, 0);
         br = Vec2f(scrw, dim.y);
         wrap_edge = dim.x-padding.x*2;
         lines_scrolled = 0;
-
+        
         slider = Slider("scroll", tl-Vec2f(15,0), Vec2f(15, dim.y), Vec2f(15,15), Vec2f(16,16), 1.0f, 0);
     }
 
@@ -89,9 +98,9 @@ class MessageBox
     
     void render()
     {
-        slider.render();
-
         GUI::SetFont("CascadiaCodePL_12");
+
+        slider.render();
         GUI::DrawPane(tl-Vec2f(0,10), br, SColor(hud_transparency,255,255,255));
         
         if (wait_time != 0)
@@ -99,15 +108,29 @@ class MessageBox
             wait_time--;
         }
         
-        // draw new message filling
+        handleOrder();
+        int history_size = handleHistory(); // in lines
+
+        u8 was_scroll = wasMouseScroll(); // 1 - up, 2 - down
+        if (was_scroll != 0 && mouseHovered(this, slider))
+        {
+            slider.scrollBy(was_scroll == 1 ? Maths::Min(-1, -25+history_size/4) : Maths::Max(1, 25-history_size/4));
+        }
+    }
+
+    // process and draw recent message
+    void handleOrder()
+    {
         if (order_list.size() > 0)
         {
             Message@ msg = order_list[0];
 
+            // timer to draw next symbol
             if (wait_time == 0)
             {
                 this.write(msg);
             }
+            msg.fadeIn(20);
 
             u8 l_size = msg.text_lines.size();
             string l_text = l_size == 0 ? msg.text_to_write : msg.text_to_write.substr(getLineIndex(msg)-1);
@@ -121,11 +144,15 @@ class MessageBox
             }
             l_text = l_text.substr(spaces);
 
+            // processed line (text filler) dimensions
             Vec2f l_dim;
             GUI::GetTextDimensions(l_text, l_dim);
             
+            // reference for processing line dimensions
             Vec2f text_dim;
             GUI::GetTextDimensions(msg.text_to_write, text_dim);
+
+            // apply height, including margin as message_gap
             msg.height = (text_dim.y*(l_size+1))+message_gap;
 
             Vec2f msg_pos = br - Vec2f(dim.x, text_dim.y) + Vec2f(padding.x, -padding.y);
@@ -134,53 +161,74 @@ class MessageBox
             u16 index = msg.text_to_write.size();
             bool endline = msg.ended();
             
-            // draw on-going message
+            // draw filler message
             if (lines_scrolled == 0)
             {
-                if (l_size > 0)
+                SColor copy_color_white = color_white;
+                bool has_title_alpha = false;
+                for (u8 i = 0; i < l_size+1; i++)
                 {
-                    for (u8 i = 0; i < l_size; i++)
+                    string newtext;
+                    Vec2f l_pos = msg_pos-Vec2f(0, line_height*(i+1));
+                    if (i == l_size) // reserved for title
                     {
-                        string newtext = msg.text_lines[l_size-(i+1)];
-                        Vec2f l_pos = msg_pos-Vec2f(0, line_height*(i+1));
-
-                        GUI::DrawText(newtext, l_pos, color_white);
+                        GUI::SetFont("CascadiaCodePL-Bold_13");
+                        newtext = msg.title;
+                        l_pos.y -= msg.title_offset;
+                        copy_color_white.setAlpha(msg.title_alpha);
                     }
+                    else if (l_size > 0)
+                    {
+                        newtext = msg.text_lines[l_size-(i+1)];
+                    }
+                    
+                    GUI::DrawText(newtext, l_pos, copy_color_white);
                 }
+                GUI::SetFont("CascadiaCodePL_12");
                 GUI::DrawText(l_text, msg_pos, color_white);
             }
 
             // separate lines once it passes edge
-            if (l_dim.x > wrap_edge || endline) // also test w\o spaces
+            if (l_dim.x > wrap_edge || endline)
             {
-                for (u16 i = 1; i <= 12; i++)
-                {
-                    if (i < 12)
-                    {
-                        u16 check_index = index-i;
-                        string wrap_line = l_text.substr(check_index, 1);
-
-                        if (wrap_line == " " || endline)
-                        {
-                            msg.text_lines.push_back(l_text.substr(0, check_index+1));
-                            break;
-                        }
-                    }
-                    else // the word is too long
-                    {
-                        msg.text_lines.push_back(l_text.substr(0, index)+(endline?"":"-"));
-                    }
-                }
+                wrapText(msg, l_text, index, endline);
             }
         }
+    }
 
-        // draw history of messages by lines, apply effects here
+    // wraps text line at position, specify if line is last and is message end 
+    void wrapText(Message@ msg, string l_text, u16 index, bool message_end)
+    {
+        for (u16 i = 1; i <= 12; i++)
+        {
+            if (i < 12)
+            {
+                u16 check_index = index-i;
+                string wrap_line = l_text.substr(check_index, 1);
+
+                if (wrap_line == " " || message_end)
+                {
+                    msg.text_lines.push_back(l_text.substr(0, check_index+1));
+                    break;
+                }
+            }
+            else // the word is too long
+            {
+                msg.text_lines.push_back(l_text.substr(0, index)+(message_end?"":"-"));
+            }
+        }
+    }
+
+    // shatters messages from history into lines and assigns them positions relatively
+    u16 handleHistory()
+    {
         f32 scroll = slider.scrolled;
         u16 lines_outbound = 0;
         f32 total_offset = 0;
 
         string[] lines;
         Vec2f[] offsets;
+        bool[] is_title;
 
         for (u8 i = 0; i < history.size(); i++)
         {
@@ -197,36 +245,54 @@ class MessageBox
             Vec2f msg_pos = Vec2f_lerp(msg.old_pos, br - Vec2f(dim.x, offset) + l_padding, lines_scrolled == 0 ? 0.5f : 1.0f);
             msg.old_pos = msg_pos;
 
-            for (u8 j = 0; j < l_size; j++)
+            for (u8 j = 0; j < l_size+1; j++)
             {
-                string newtext = msg.text_lines[l_size-(j+1)];
+                string newtext;
                 Vec2f l_pos = msg_pos-Vec2f(0, line_height*(j+1)+3);
+                bool l_title = false;
+
+                if (j == l_size) // reserved for title
+                {
+                    newtext = msg.title;
+                    l_pos.y -= msg.title_offset;
+                    l_title = true;
+                }
+                else newtext = msg.text_lines[l_size-(j+1)];
 
                 lines.push_back(newtext);
                 offsets.push_back(l_pos);
+                is_title.push_back(l_title);
 
                 if (l_pos.y < padding.y) lines_outbound++;
             }
             total_offset += msg.height;
-
-            // draw title
         }
 
+        drawHistory(lines, offsets, is_title, lines_outbound, scroll);
+        return lines.size();
+    }
+
+    // draws history messages by lines
+    void drawHistory(string[] lines, Vec2f[] offsets, bool[] is_title, u16 lines_outbound, f32 scroll)
+    {
         lines_scrolled = lines_outbound - Maths::Round(lines_outbound*scroll);
         Vec2f scroll_offset = Vec2f(0, line_height*lines_scrolled);
 
         for (u8 i = lines_scrolled; i < lines.size(); i++)
         {
-            Vec2f l_pos = offsets[i]+scroll_offset+Vec2f(0,3*lines_scrolled); // i rly dont know why this should exist
-            if (l_pos.y < padding.y) break;
+            SColor copy_color_white = color_white;
+            Vec2f l_pos = offsets[i]+scroll_offset+Vec2f(0,3.33f*lines_scrolled); // i rly dont know why this should exist
+            
+            if (l_pos.y < 0) break;
 
-            GUI::DrawText(lines[i], l_pos, color_white);
+            GUI::SetFont(is_title[i] ? "CascadiaCodePL-Bold_13" : "CascadiaCodePL_12");
+            GUI::DrawText(lines[i], l_pos, copy_color_white);
         }
 
-        //slider.setSnap(lines_outbound);
-        GUI::DrawText("out: "+lines_outbound+"\nscrolled: "+scroll+"\nlines scrolled: "+lines_scrolled+"\noffset: "+scroll_offset, tl - Vec2f(150, -20), color_black);
+        GUI::DrawText("out: "+lines_outbound+"\nscrolled: "+scroll+"\nlines scrolled: "+lines_scrolled+"\noffset: "+scroll_offset, tl - Vec2f(170, -20), color_black);
     }
 
+    // writes a message symbol by symbol
     void write(Message@ msg)
     {
         msg.write();
@@ -244,12 +310,13 @@ class MessageBox
         }
     }
 
-    // returns index in whole text where the line starts from
+    // returns the index of last line
     int getLineIndex(Message@ msg)
     {
         return getLineIndex(msg, msg.text_lines.size());
     }
 
+    // returns index in whole text where the line starts from
     int getLineIndex(Message@ msg, u8 line)
     {
         int index = 0;
@@ -261,6 +328,30 @@ class MessageBox
     }
 };
 
+u8 wasMouseScroll()
+{
+    CControls@ controls = getControls();
+    if (controls is null) return 0;
+
+    if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMIN))) return 1;
+    else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMOUT))) return 2;
+
+    return 0;
+}
+bool mouseHovered(MessageBox@ this, Slider slider)
+{
+    CControls@ controls = getControls();
+    Vec2f mpos = controls.getMouseScreenPos();
+
+    bool isOnMessageBox = (mpos.x >= this.tl.x && mpos.x <= this.br.x && mpos.y >= this.tl.y && mpos.y <= this.br.y);
+    if (isOnMessageBox) return true;
+
+    bool isOnSlider = (mpos.x >= slider.tl.x && mpos.x <= slider.br.x && mpos.y >= slider.tl.y && mpos.y <= slider.br.y);
+    if (isOnSlider) return true;
+    
+    return false;
+}
+
 string formDefaultTitle(CPlayer@ this)
 {
     if (this is null) return "Unknown source";
@@ -269,19 +360,19 @@ string formDefaultTitle(CPlayer@ this)
 
 void addMessage(string text)
 {
-    Message msg(text, "", true, 255, 1);
+    Message msg(text, "", 4, true, 255, 1);
     addMessage(msg);
 }
 
 void addMessage(string text, string title)
 {
-    Message msg(text, title, true, 255, 1);
+    Message msg(text, title, 4, true, 255, 1);
     addMessage(msg);
 }
 
-void addMessage(string text, string title, bool playsound, u16 length, u8 delay)
+void addMessage(string text, string title, u8 title_offset, bool playsound, u16 length, u8 delay)
 {
-    Message msg(text, title, playsound, length, delay);
+    Message msg(text, title, title_offset, playsound, length, delay);
     addMessage(msg);
 }
 

@@ -395,7 +395,7 @@ void ManageCamera(CBlob@ this)
 					rawZoom = Maths::Max(1.0f, zoomLevel - 1.0f);
 					Tap(this);
 				}
-				else  if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMIN)))
+				else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMIN)))
 				{
 					rawZoom = Maths::Min(4.0f, zoomLevel + 1.0f);
 					Tap(this);

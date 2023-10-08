@@ -6,7 +6,7 @@ void onInit(CRules@ this)
 	
 	if (getLocalPlayer() !is null)
 	{
-		MessageBox setbox(10, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 16);
+		MessageBox setbox(30, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 16);
 		this.set("MessageBox", @setbox);
 	}
 }
