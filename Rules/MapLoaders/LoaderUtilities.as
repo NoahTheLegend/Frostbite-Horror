@@ -446,9 +446,19 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 
 	SET_TILE_CALLBACK@ set_tile_func;
 	getRules().get("SET_TILE_CALLBACK", @set_tile_func);
-	if( set_tile_func !is null )
+	if (set_tile_func !is null)
 	{
 		set_tile_func(index, tile_new);
+	}
+
+	if (!getRules().hasTag("loading")
+		&& ((tile_new == CMap::tile_empty && tile_old != CMap::tile_empty) // any tile nearby broke, now empty
+		|| (tile_old == CMap::tile_empty))) // any tile nearby placed
+	{
+		for (u8 i = 0; i < 4; i++)
+		{
+			bice_Update(map, pos + directions[i]);
+		}
 	}
 
 	switch(tile_new)
@@ -726,6 +736,7 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 
 			case CMap::tile_bice:
 			{
+				map.SetTileSupport(index, 255);
 				Vec2f pos = map.getTileWorldPosition(index);
 				map.AddTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::WATER_PASSES | Tile::LIGHT_SOURCE);
 				bice_SetTile(map, pos);
