@@ -9,12 +9,13 @@ const u8 line_height = 12;
 class Message
 {
     string text;
-    string title; // todo
+    string title;
     u8 title_offset;
+    SColor title_color; // todo
     string[] text_lines;
     f32 height;
     bool playsound; // todo
-    u16 max_length; // todo
+    u16 max_length;
     string text_to_write;
     u8 delay;
     u8 title_alpha;
@@ -37,12 +38,13 @@ class Message
         completed = false;
     }
 
-    void write()
+    string write()
     {
         if (!ended())
         {
-            this.text_to_write = text.substr(0, text_to_write.size()+1);
+            return this.text_to_write = text.substr(0, text_to_write.size()+1);
         }
+        return "";
     }    
 
     bool ended()
@@ -124,11 +126,11 @@ class MessageBox
         if (order_list.size() > 0)
         {
             Message@ msg = order_list[0];
-
+            string written; // TODO: bigger delay after dots and such
             // timer to draw next symbol
             if (wait_time == 0)
             {
-                this.write(msg);
+                written = this.write(msg);
             }
             msg.fadeIn(20);
 
@@ -293,9 +295,8 @@ class MessageBox
     }
 
     // writes a message symbol by symbol
-    void write(Message@ msg)
+    string write(Message@ msg)
     {
-        msg.write();
         wait_time = msg.delay;
 
         if (msg.ended())
@@ -308,6 +309,7 @@ class MessageBox
             history.insertAt(0, msg);
             order_list.removeAt(0);
         }
+        return msg.write();
     }
 
     // returns the index of last line

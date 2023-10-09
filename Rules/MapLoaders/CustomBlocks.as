@@ -144,7 +144,6 @@ namespace CMap
 		tile_snow_pile_v4,
 		tile_snow_pile_v5,
 
-
 		tile_ice = tile_snow_pile + 16,
 		tile_ice_v0,
 		tile_ice_v1,
@@ -166,7 +165,45 @@ namespace CMap
 		tile_ice_d2,
 		tile_ice_d3,
 
-		tile_snow_bricks = tile_ice + 32,
+		tile_thick_ice = tile_ice + 32,
+		tile_thick_ice_v0,
+		tile_thick_ice_v1,
+		tile_thick_ice_v2,
+		tile_thick_ice_v3,
+		tile_thick_ice_v4,
+		tile_thick_ice_v5,
+		tile_thick_ice_v6,
+		tile_thick_ice_v7,
+		tile_thick_ice_v8,
+		tile_thick_ice_v9,
+		tile_thick_ice_v10,
+		tile_thick_ice_v11,
+		tile_thick_ice_v12,
+		tile_thick_ice_v13,
+		tile_thick_ice_v14,
+		tile_thick_ice_d0 = tile_thick_ice + 16,
+		tile_thick_ice_d1,
+		tile_thick_ice_d2,
+		tile_thick_ice_d3,
+
+		tile_bice = tile_thick_ice + 32,
+		tile_bice_v0,
+		tile_bice_v1,
+		tile_bice_v2,
+		tile_bice_v3,
+		tile_bice_v4,
+		tile_bice_v5,
+		tile_bice_v6,
+		tile_bice_v7,
+		tile_bice_v8,
+		tile_bice_v9,
+		tile_bice_v10,
+		tile_bice_v11,
+		tile_bice_v12,
+		tile_bice_v13,
+		tile_bice_v14,
+
+		tile_snow_bricks = tile_bice + 16,
 		tile_snow_bricks_d0,
 		tile_snow_bricks_d1,
 		tile_bsnow_bricks = tile_snow_bricks + 3,
@@ -175,13 +212,18 @@ namespace CMap
 	};
 };
 
+bool isSolid(u32 type)
+{
+	return isSolid(getMap(), type);
+}
+
 bool isSolid(CMap@ map, u32 type)
 {
 	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedStone(type) || isTileCaution(type)
-		|| isTileSnow(type) || isTileIce(type) || isTileElderBrick(type) || isTileSnowBricks(type);
+		|| isTileSnow(type) || isTileIce(type) || isTileThickIce(type) || isTileElderBrick(type) || isTileSnowBricks(type);
 }
 
-bool isSolidNotIce(CMap@ map, u32 type)
+bool isSolidNotIce(CMap@ map, u32 type) // thick ice is still solid!
 {
 	return !isTileIce(type) && isSolid(map, type);
 }
@@ -223,6 +265,14 @@ bool isTileBackPolishedStone(u32 index)
 
 bool isTileIce(u32 index)
 {return index >= CMap::tile_ice && index <= CMap::tile_ice_d3;}
+
+bool isTileThickIce(u32 index)
+{return index >= CMap::tile_thick_ice && index <= CMap::tile_thick_ice_d3;}
+
+bool isTileAnyIce(u32 index)
+{return isTileIce(index) || isTileThickIce(index);}
+
+
 
 bool isTileBackGlass(u32 index)
 {return index >= CMap::tile_bglass_d0 && index <= CMap::tile_bglass_v14;}

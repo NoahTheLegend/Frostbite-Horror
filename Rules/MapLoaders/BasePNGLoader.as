@@ -213,6 +213,8 @@ class PNGLoader
 			case map_colors::tile_snow_pile_v4:     map.SetTile(offset, CMap::tile_snow_pile_v4);     break;    
 			case map_colors::tile_snow_pile_v5:     map.SetTile(offset, CMap::tile_snow_pile_v5);     break;
 			case map_colors::tile_ice:              map.SetTile(offset, CMap::tile_ice);              break;
+			case map_colors::tile_thick_ice:    	map.SetTile(offset, CMap::tile_thick_ice);        break;
+			case map_colors::tile_bice:    			map.SetTile(offset, CMap::tile_bice);   	      break;
 			case map_colors::tile_bglass:           map.SetTile(offset, CMap::tile_bglass);           break;
 			case map_colors::tile_snow_bricks:      map.SetTile(offset, CMap::tile_snow_bricks);      break;
 			case map_colors::tile_bsnow_bricks:     map.SetTile(offset, CMap::tile_bsnow_bricks);     break;

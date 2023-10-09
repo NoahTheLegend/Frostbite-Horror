@@ -46,6 +46,8 @@ bool onMapTileCollapse(CMap@ map, u32 offset)
 
 TileType server_onTileHit(CMap@ map, f32 damage, u32 index, TileType oldTileType)
 {
+	Vec2f pos = map.getTileWorldPosition(index);
+
 	if (map.getTile(index).type > 255)
 	{
 		switch(oldTileType)
@@ -119,6 +121,47 @@ TileType server_onTileHit(CMap@ map, f32 damage, u32 index, TileType oldTileType
 
 			case CMap::tile_ice_d3:
 				return CMap::tile_empty;
+
+			// thick ice
+			case CMap::tile_thick_ice:
+				return CMap::tile_thick_ice_d0;
+
+			case CMap::tile_thick_ice_v0:
+			case CMap::tile_thick_ice_v1:
+			case CMap::tile_thick_ice_v2:
+			case CMap::tile_thick_ice_v3:
+			case CMap::tile_thick_ice_v4:
+			case CMap::tile_thick_ice_v5:
+			case CMap::tile_thick_ice_v6:
+			case CMap::tile_thick_ice_v7:
+			case CMap::tile_thick_ice_v8:
+			case CMap::tile_thick_ice_v9:
+			case CMap::tile_thick_ice_v10:
+			case CMap::tile_thick_ice_v11:
+			case CMap::tile_thick_ice_v12:
+			case CMap::tile_thick_ice_v13:
+			case CMap::tile_thick_ice_v14:
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+
+				map.server_SetTile(pos, CMap::tile_thick_ice_d0);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+
+				for (u8 i = 0; i < 4; i++)
+				{
+					thickice_Update(map, map.getTileWorldPosition(index) + directions[i]);
+				}
+				return CMap::tile_thick_ice_d0;
+			}
+
+			case CMap::tile_thick_ice_d0:
+			case CMap::tile_thick_ice_d1:
+			case CMap::tile_thick_ice_d2:
+				return oldTileType + 1;
+
+			case CMap::tile_thick_ice_d3:
+				return CMap::tile_bice;
 
 			// snow bricks
 			case CMap::tile_snow_bricks:
@@ -354,6 +397,17 @@ TileType server_onTileHit(CMap@ map, f32 damage, u32 index, TileType oldTileType
 			case CMap::tile_bglass_d0:
 				return CMap::tile_empty;
 
+			case CMap::tile_bice:
+			case CMap::tile_bice_v0:
+			case CMap::tile_bice_v1:
+			case CMap::tile_bice_v2:
+			case CMap::tile_bice_v3:
+			case CMap::tile_bice_v4:
+			case CMap::tile_bice_v5:
+			case CMap::tile_bice_v6:
+			case CMap::tile_bice_v7:
+			case CMap::tile_bice_v8:
+				return oldTileType;
 
 			case CMap::tile_bsteel:
 				return CMap::tile_bsteel_d0;
@@ -407,6 +461,8 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 					|| tile_old == CMap::tile_snow_pile_v5)
 				OnSnowTileDestroyed(map, index);
 			else if (tile_old == CMap::tile_ice_d3)
+				OnIceTileDestroyed(map, index);
+			else if (tile_old == CMap::tile_thick_ice_d3)
 				OnIceTileDestroyed(map, index);
 			else if (tile_old == CMap::tile_steel_d8 || tile_old == CMap:: tile_bsteel_d4)
 				OnSteelTileDestroyed(map, index);
@@ -509,8 +565,17 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				Vec2f pos = map.getTileWorldPosition(index);
 
 				ice_SetTile(map, pos);
-				//map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
-				//map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag(index, Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
+
+				break;
+			}
+
+			case CMap::tile_thick_ice:
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+
+				thickice_SetTile(map, pos);
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION | Tile::LIGHT_PASSES);
 				map.RemoveTileFlag(index, Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
@@ -537,13 +602,30 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 				
 				break;
 			}
-			case CMap::tile_ice_v14:
+			case CMap::tile_thick_ice_v0:
+			case CMap::tile_thick_ice_v1:
+			case CMap::tile_thick_ice_v2:
+			case CMap::tile_thick_ice_v3:
+			case CMap::tile_thick_ice_v4:
+			case CMap::tile_thick_ice_v5:
+			case CMap::tile_thick_ice_v6:
+			case CMap::tile_thick_ice_v7:
+			case CMap::tile_thick_ice_v8:
+			case CMap::tile_thick_ice_v9:
+			case CMap::tile_thick_ice_v10:
+			case CMap::tile_thick_ice_v11:
+			case CMap::tile_thick_ice_v12:
+			case CMap::tile_thick_ice_v13:
 			{
-				//bool mirror = (XORRandom(2)==0);
-				//bool flip = (XORRandom(2)==0);
-				//if (mirror) map.AddTileFlag(index, Tile::MIRROR);
-				//if (flip) map.AddTileFlag(index, Tile::FLIP);
+				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
+				map.RemoveTileFlag(index, Tile::LIGHT_SOURCE | Tile::WATER_PASSES | Tile::LIGHT_PASSES);
 				
+				break;
+			}
+
+			case CMap::tile_ice_v14:
+			case CMap::tile_thick_ice_v14:
+			{	
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
 				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 
@@ -554,6 +636,10 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_ice_d1:
 			case CMap::tile_ice_d2:
 			case CMap::tile_ice_d3:
+			case CMap::tile_thick_ice_d0:
+			case CMap::tile_thick_ice_d1:
+			case CMap::tile_thick_ice_d2:
+			case CMap::tile_thick_ice_d3:
 				map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
 				map.RemoveTileFlag(index, Tile::LIGHT_PASSES | Tile::LIGHT_SOURCE | Tile::WATER_PASSES);
 				OnIceTileHit(map, index);
@@ -637,6 +723,15 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			case CMap::tile_bglass_d0:
 				OnBackGlassTileHit(map, index);
 				break;
+
+			case CMap::tile_bice:
+			{
+				Vec2f pos = map.getTileWorldPosition(index);
+				map.AddTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::WATER_PASSES | Tile::LIGHT_SOURCE);
+				bice_SetTile(map, pos);
+
+				break;
+			}
 
 			case CMap::tile_bsteel:
 			{
@@ -865,7 +960,7 @@ u8 ice_GetMask(CMap@ map, Vec2f pos)
 
 	for (u8 i = 0; i < 4; i++)
 	{
-		if (checkIceTile(map, pos + directions[i])) mask |= 1 << i;
+		if (checkIceTile(map, pos + directions[i]) || checkThickIceTile(map, pos + directions[i])) mask |= 1 << i;
 	}
 
 	return mask;
@@ -878,6 +973,65 @@ void ice_Update(CMap@ map, Vec2f pos)
 		map.SetTile(map.getTileOffset(pos),CMap::tile_ice+ice_GetMask(map,pos));
 }
 
+void thickice_SetTile(CMap@ map, Vec2f pos)
+{
+	map.SetTile(map.getTileOffset(pos), CMap::tile_thick_ice + thickice_GetMask(map, pos));
+
+	for (u8 i = 0; i < 4; i++)
+	{
+		thickice_Update(map, pos + directions[i]);
+	}
+}
+
+u8 thickice_GetMask(CMap@ map, Vec2f pos)
+{
+	u8 mask = 0;
+
+	for (u8 i = 0; i < 4; i++)
+	{
+		if (checkThickIceTile(map, pos + directions[i]) || checkIceTile(map, pos + directions[i])) mask |= 1 << i;
+	}
+
+	return mask;
+}
+
+void thickice_Update(CMap@ map, Vec2f pos)
+{
+	u16 tile = map.getTile(pos).type;
+	if (checkThickIceTile(map, pos))
+		map.SetTile(map.getTileOffset(pos),CMap::tile_thick_ice+thickice_GetMask(map,pos));
+}
+
+
+void bice_SetTile(CMap@ map, Vec2f pos)
+{
+	map.SetTile(map.getTileOffset(pos), CMap::tile_bice + bice_GetMask(map, pos));
+
+	for (u8 i = 0; i < 4; i++)
+	{
+		bice_Update(map, pos + directions[i]);
+	}
+}
+
+u8 bice_GetMask(CMap@ map, Vec2f pos)
+{
+	u8 mask = 0;
+
+	for (u8 i = 0; i < 4; i++)
+	{
+		if (checkBackIceTile(map, pos + directions[i]) || !isTileExposure(map.getTile(pos + directions[i]).type)) mask |= 1 << i;
+	}
+
+	return mask;
+}
+
+void bice_Update(CMap@ map, Vec2f pos)
+{
+	u16 tile = map.getTile(pos).type;
+	if (checkBackIceTile(map, pos))
+		map.SetTile(map.getTileOffset(pos),CMap::tile_bice+bice_GetMask(map,pos));
+}
+
 void OnIceTileHit(CMap@ map, u32 index)
 {
 	map.AddTileFlag(index, Tile::SOLID | Tile::COLLISION);
@@ -887,7 +1041,7 @@ void OnIceTileHit(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 1.1f);
+		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 0.8f);
 		sparks(pos, 1, 1);
 	}
 }
@@ -898,7 +1052,7 @@ void OnIceTileDestroyed(CMap@ map, u32 index)
 	{
 		Vec2f pos = map.getTileWorldPosition(index);
 
-		Sound::Play("GlassBreak1.ogg", pos, 1.0f, 0.75f);
+		Sound::Play("GlassBreak1.ogg", pos, 1.0f, 0.7f);
 	}
 }
 
@@ -1177,37 +1331,50 @@ void OnBackGlassTileHit(CMap@ map, u32 index)
 	}
 }
 
-bool checkPolishedStoneTile(CMap@ map, Vec2f pos) // required for getMask function
+// these are required only for getMask functions
+bool checkPolishedStoneTile(CMap@ map, Vec2f pos) 
 {
 	u16 tile = map.getTile(pos).type;
 	return tile >= CMap::tile_polishedstone && tile <= CMap::tile_polishedstone_v14;
 }
 
-bool checkBackGlassTile(CMap@ map, Vec2f pos) // required for getMask function
+bool checkBackGlassTile(CMap@ map, Vec2f pos) 
 {
 	u16 tile = map.getTile(pos).type;
 	return tile >= CMap::tile_bglass && tile <= CMap::tile_bglass_v14;
 }
 
-bool checkBackPolishedStoneTile(CMap@ map, Vec2f pos) // required for getMask function
+bool checkBackPolishedStoneTile(CMap@ map, Vec2f pos) 
 {
 	u16 tile = map.getTile(pos).type;
 	return tile >= CMap::tile_bpolishedstone && tile <= CMap::tile_bpolishedstone_v14;
 }
 
-bool checkIceTile(CMap@ map, Vec2f pos) // required for getMask function
+bool checkIceTile(CMap@ map, Vec2f pos) 
 {
 	u16 tile = map.getTile(pos).type;
 	return tile >= CMap::tile_ice && tile <= CMap::tile_ice_v14;
 }
 
-bool checkBackSteelTile(CMap@ map, Vec2f pos) // required for getMask function
+bool checkThickIceTile(CMap@ map, Vec2f pos) 
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_thick_ice && tile <= CMap::tile_thick_ice_v14;
+}
+
+bool checkBackIceTile(CMap@ map, Vec2f pos) 
+{
+	u16 tile = map.getTile(pos).type;
+	return tile >= CMap::tile_bice && tile <= CMap::tile_bice_v14;
+}
+
+bool checkBackSteelTile(CMap@ map, Vec2f pos) 
 {
 	u16 tile = map.getTile(pos).type;
 	return tile >= CMap::tile_bsteel && tile <= CMap::tile_bsteel_v2;
 }
 
-bool checkSteelTile(CMap@ map, Vec2f pos) // required for getMask function
+bool checkSteelTile(CMap@ map, Vec2f pos) 
 {
 	u16 tile = map.getTile(pos).type;
 	return tile >= CMap::tile_steel && tile <= CMap::tile_steel_v14;

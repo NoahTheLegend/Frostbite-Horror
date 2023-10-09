@@ -67,6 +67,8 @@ namespace map_colors
 		tile_snow_pile_v5      = 0xFF295d61, // smallest
 
 		tile_ice               = 0xFF4070f1,
+		tile_thick_ice		   = 0xFF1020f1,
+		tile_bice              = 0xFF3b44bc,
 		tile_snow_bricks       = 0xFFc9c9c9,
 		tile_bsnow_bricks      = 0xFFb2b2b2,
 
