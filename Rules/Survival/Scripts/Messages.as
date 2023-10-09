@@ -1,4 +1,8 @@
 #include "Slider.as";
+#include "ClientVars.as";
+
+// capped to framerate
+// staging may have issues
 
 const u16 scrw = getDriver().getScreenWidth();
 const u16 scrh = getDriver().getScreenHeight();
@@ -42,7 +46,9 @@ class Message
     {
         if (!ended())
         {
-            return this.text_to_write = text.substr(0, text_to_write.size()+1);
+            string full = this.text_to_write = text.substr(0, text_to_write.size()+1);
+            string char = full.substr(full.size()-1, 1);
+            return char;
         }
         return "";
     }    
@@ -97,6 +103,22 @@ class MessageBox
         msg.old_pos = Vec2f(tl.x, br.y);
         this.order_list.push_back(msg);
     }
+
+    u8 getPunctuationDelay(string l)
+    {
+        switch (l.getHash())
+        {
+            case 688690635: // ,
+            case 604802540: // !
+                return 10;
+            case 722245873: // .
+            case 1041020634: // ;
+            case 1057798253: // :
+            case 973910158: // ?
+                return 20;
+        }
+        return 0;
+    }
     
     void render()
     {
@@ -126,11 +148,15 @@ class MessageBox
         if (order_list.size() > 0)
         {
             Message@ msg = order_list[0];
-            string written; // TODO: bigger delay after dots and such
+            string written;
+            bool endline = msg.ended();
             // timer to draw next symbol
             if (wait_time == 0)
             {
                 written = this.write(msg);
+
+                u8 extra_delay = getPunctuationDelay(written);
+                wait_time = msg.delay + extra_delay;
             }
             msg.fadeIn(20);
 
@@ -159,10 +185,8 @@ class MessageBox
 
             Vec2f msg_pos = br - Vec2f(dim.x, text_dim.y) + Vec2f(padding.x, -padding.y);
             msg.old_pos = msg_pos+Vec2f(0, text_dim.y);
-            
+        
             u16 index = msg.text_to_write.size();
-            bool endline = msg.ended();
-            
             // draw filler message
             if (lines_scrolled == 0)
             {
@@ -214,7 +238,7 @@ class MessageBox
                     break;
                 }
             }
-            else // the word is too long
+            else // the word is too long or message ended
             {
                 msg.text_lines.push_back(l_text.substr(0, index)+(message_end?"":"-"));
             }
@@ -297,8 +321,9 @@ class MessageBox
     // writes a message symbol by symbol
     string write(Message@ msg)
     {
-        wait_time = msg.delay;
-
+        if (msg.playsound)
+            Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), msg_volume, msg_pitch+XORRandom(11)*0.01f);
+        
         if (msg.ended())
         {
             if (history.size() > max_history_size)
@@ -340,6 +365,7 @@ u8 wasMouseScroll()
 
     return 0;
 }
+
 bool mouseHovered(MessageBox@ this, Slider slider)
 {
     CControls@ controls = getControls();
@@ -374,7 +400,7 @@ void addMessage(string text, string title)
 
 void addMessage(string text, string title, u8 title_offset, bool playsound, u16 length, u8 delay)
 {
-    Message msg(text, title, title_offset, playsound, length, delay);
+    Message msg(text, title, title_offset, playsound && !msg_mute, length, delay);
     addMessage(msg);
 }
 
