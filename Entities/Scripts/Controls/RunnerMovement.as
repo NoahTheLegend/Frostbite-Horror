@@ -725,7 +725,7 @@ void onTick(CMovement@ this)
 			f32 ice_stop_factor = 1.0f;
 			f32 ice_move_factor = 1.0f;
 			TileType tile = getSurfaceTile(blob).type;
-			if (tile != -1 && isTileIce(tile))
+			if (tile != -1 && isTileAnyIce(tile))
 			{
 				ice_stop_factor = 0.05f;
 				ice_move_factor = 0.35f;

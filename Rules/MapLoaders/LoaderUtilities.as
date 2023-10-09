@@ -738,8 +738,9 @@ void onSetTile(CMap@ map, u32 index, TileType tile_new, TileType tile_old)
 			{
 				map.SetTileSupport(index, 255);
 				Vec2f pos = map.getTileWorldPosition(index);
-				map.AddTileFlag(index, Tile::BACKGROUND | Tile::LIGHT_PASSES | Tile::WATER_PASSES | Tile::LIGHT_SOURCE);
 				bice_SetTile(map, pos);
+				map.AddTileFlag(index, Tile::BACKGROUND | Tile::WATER_PASSES | Tile::LIGHT_PASSES);
+				map.RemoveTileFlag(index, Tile::LIGHT_SOURCE | Tile::SOLID | Tile::COLLISION);
 
 				break;
 			}
@@ -1030,7 +1031,8 @@ u8 bice_GetMask(CMap@ map, Vec2f pos)
 
 	for (u8 i = 0; i < 4; i++)
 	{
-		if (checkBackIceTile(map, pos + directions[i]) || !isTileExposure(map.getTile(pos + directions[i]).type)) mask |= 1 << i;
+		if (checkBackIceTile(map, pos + directions[i]) || !isTileExposure(map.getTile(pos + directions[i]).type))
+			mask |= 1 << i;
 	}
 
 	return mask;
@@ -1040,7 +1042,13 @@ void bice_Update(CMap@ map, Vec2f pos)
 {
 	u16 tile = map.getTile(pos).type;
 	if (checkBackIceTile(map, pos))
+	{
 		map.SetTile(map.getTileOffset(pos),CMap::tile_bice+bice_GetMask(map,pos));
+		// go on fucker you think youre smart then disable it DO IT place it in onSetTile hook
+		u32 index = map.getTileOffset(pos);
+		map.AddTileFlag(index, Tile::BACKGROUND | Tile::WATER_PASSES | Tile::LIGHT_PASSES);
+		map.RemoveTileFlag(index, Tile::LIGHT_SOURCE | Tile::SOLID | Tile::COLLISION);
+	}
 }
 
 void OnIceTileHit(CMap@ map, u32 index)
