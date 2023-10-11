@@ -121,7 +121,7 @@ void ManageCursors(CBlob@ this)
 			}
 		}
 	}
-	
+	v = 255; // disabled temporarily
 	f32 scale = getScaleFactor(frame) * cl_mouse_scale / 2;
 	GUI::DrawIcon("HumanCursor.png", a1 ? frame+1 : frame, Vec2f(32, 32), mpos+offset, scale, SColor(Maths::Max(155,v), v, v, v));
 }

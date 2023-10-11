@@ -75,6 +75,7 @@ class MessageBox
     Slider slider;
     u16 lines_scrolled;
     u8 message_gap;
+    ClientVars vars;
 
     Vec2f tl;
     Vec2f br;
@@ -93,6 +94,13 @@ class MessageBox
         lines_scrolled = 0;
         
         slider = Slider("scroll", tl-Vec2f(15,0), Vec2f(15, dim.y), Vec2f(15,15), Vec2f(16,16), 1.0f, 0);
+
+        if (getRules() !is null)
+        {
+            ClientVars@ mars;
+            if (getRules().get("ClientVars", @mars))
+                this.vars = mars;
+        }
     }
 
     Message@[] order_list;
@@ -119,12 +127,26 @@ class MessageBox
         }
         return 0;
     }
+
+    bool UpdateVars()
+    {
+        if (getRules().hasTag("update_clientvars"))
+        {
+            ClientVars@ mars;
+            if (getRules().get("ClientVars", @mars))
+                this.vars = mars;
+
+            return true;
+        }
+        return false;
+    }
     
     void render()
     {
+        UpdateVars();
         GUI::SetFont("CascadiaCodePL_12");
 
-        slider.render();
+        slider.render(255);
         GUI::DrawPane(tl-Vec2f(0,10), br, SColor(hud_transparency,255,255,255));
         
         if (wait_time != 0)
@@ -322,7 +344,7 @@ class MessageBox
     string write(Message@ msg)
     {
         if (msg.playsound)
-            Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), msg_volume, msg_pitch+XORRandom(11)*0.01f);
+            Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), vars.msg_volume, vars.msg_pitch+XORRandom(11)*0.01f);
         
         if (msg.ended())
         {
@@ -400,7 +422,14 @@ void addMessage(string text, string title)
 
 void addMessage(string text, string title, u8 title_offset, bool playsound, u16 length, u8 delay)
 {
-    Message msg(text, title, title_offset, playsound && !msg_mute, length, delay);
+    bool mute = false;
+    ClientVars@ vars;
+    if (getRules().get("ClientVars", @vars))
+    {
+        mute = vars.msg_mute;
+    }
+
+    Message msg(text, title, title_offset, playsound && !mute, length, delay);
     addMessage(msg);
 }
 

@@ -1,24 +1,161 @@
 #define CLIENT_ONLY
 
 #include "ClientVars.as";
+#include "Slider.as";
+#include "CheckBox.as";
 
-void onInit(CRules@ this)
-{
-    if (getLocalPlayer() !is null)
-	{
-        ConfigFile cfg = ConfigFile();
-	    if (!cfg.loadFile("Cache/FB/clientconfig.cfg"))
-	    {
-	    	cfg.add_bool("mute_messages", msg_mute);
-            cfg.add_f32("messages_volume", msg_volume);
-            cfg.add_f32("messages_pitch", msg_pitch);
-	    	cfg.saveFile("FB/clientconfig.cfg");
-	    }
+class ConfigMenu {
+    Vec2f pos;
+    Vec2f dim;
+
+    u8 global_alpha;
+    u32 state_change_time;
+    u8 state; // closed icon > expand X axis > expand Y axis and vice-versa
+
+    Vec2f tl;
+    Vec2f br;
+    Section[] sections;
+
+    ConfigMenu(Vec2f _pos, Vec2f _dim)
+    {
+        pos = _pos;
+        dim = _dim;
+
+        tl = pos;
+        br = pos+dim;
+
+        global_alpha = 0;
+        state_change_time = 0;
+        state = 0;
+    }
+
+    void addSection(Section@ section)
+    {
+        sections.push_back(section);
+    }
+
+    bool hover(Vec2f mpos, Vec2f etl, Vec2f ebr)
+    {
+        return mpos.x >= etl.x && mpos.x <= ebr.x
+            && mpos.y >= etl.y && mpos.y <= ebr.y;
+    }
+
+    void render()
+    {
+        CControls@ controls = getControls();
+        if (controls is null) return;
+
+        Vec2f mpos = controls.getInterpMouseScreenPos();
+
+        if (state == 0)
+        {
+            Vec2f btn_dim = Vec2f(32,32);
+
+            bool hovering = hover(mpos, tl, tl+btn_dim);
+
+            if (hovering && (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
+                state = 1;
+
+            GUI::DrawPane(tl, tl+btn_dim, SColor(hovering?200:100,255,255,255));
+            GUI::DrawIcon("SettingsMenuIcon.png", 0, btn_dim, tl, 0.5f, 0.5f, SColor(hovering?200:100,255,255,255));
+
+            global_alpha = 0;
+        }
+        else if (state == 1 || state == 3) // 1 opening, 3 closing
+        {
+            // todo: open anim
+            if (state == 1) state = 2;
+            else state = 0;
+        }
         else
         {
-            msg_mute = cfg.read_bool("mute_messages", msg_mute);
-            msg_volume = cfg.read_f32("messages_volume", msg_volume);
-            msg_pitch = cfg.read_f32("messages_pitch", msg_pitch);
+            GUI::DrawPane(tl, br, SColor(155,255,255,255));
+
+            bool hovering = hover(mpos, br, br+Vec2f(32,32)); // todo, close button
+            if (hovering && (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
+                state = 3;
+
+            global_alpha = Maths::Min(255, global_alpha+25);
+            for (u8 i = 0; i < sections.size(); i++)
+            {
+                sections[i].render(global_alpha);
+            }
         }
     }
-}
+};
+
+class Section {
+    string title;
+    Vec2f pos;
+    Vec2f dim;
+    Vec2f padding;
+
+    Vec2f tl;
+    Vec2f br;
+    Option[] options;
+
+    Section(string _title, Vec2f _pos, Vec2f _dim)
+    {
+        title = _title;
+        pos = _pos;
+        dim = _dim;
+
+        tl = pos;
+        br = pos+dim;
+        padding = Vec2f(15,15);
+    }
+
+    void addOption(Option@ option)
+    {
+        options.push_back(option);
+    }
+
+    void render(u8 alpha)
+    {
+        SColor col_white = SColor(alpha,255,255,255);
+        GUI::SetFont("RockwellMT_14");
+
+        GUI::DrawPane(tl, br, SColor(55,255,255,255));
+        GUI::DrawText(title, pos+padding, col_white);
+        GUI::DrawRectangle(tl+padding + Vec2f(0,10), Vec2f(br.x-padding.x, padding.y+5 + 10), col_white);
+        
+        for (u8 i = 0; i < options.size(); i++)
+        {
+            options[i].render(alpha);
+        }
+    }
+};
+
+class Option {
+    string text;
+    Vec2f pos;
+    bool has_slider;
+    bool has_check;
+
+    Slider slider;
+    CheckBox check;
+
+    Option(string _text, Vec2f _pos, bool _has_slider, bool _has_check)
+    {
+        text = _text;
+        pos = _pos;
+        has_slider = _has_slider;
+        has_check = _has_check;
+
+        if (has_slider)
+            slider = Slider("option_slider", pos+Vec2f(0,15), Vec2f(100,16), Vec2f(25,15), Vec2f(16,16), 1.0f, 0);
+        if (has_check)
+            check = CheckBox(false, pos, Vec2f(20,20));
+    }
+
+    void render(u8 alpha)
+    {
+        if (has_slider)
+            slider.render(alpha);
+        if (has_check)
+            check.render(alpha);
+        
+        GUI::SetFont("RockwellMT_14");
+        GUI::DrawText(text, has_check?pos+Vec2f(30,0):pos, SColor(alpha,255,255,255));
+    }
+};

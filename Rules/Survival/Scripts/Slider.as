@@ -32,10 +32,8 @@ class Slider
         scrolled = 0; 
     }
 
-    void render()
+    void render(u8 alpha)
     {
-        if (getLocalPlayer() is null) return;
-
         CControls@ controls = getControls();
         if (controls is null) return;
 
@@ -66,11 +64,12 @@ class Slider
         Vec2f drawpos = button_pos + (dim.y > dim.x ? Vec2f(-aligned_dim.x/2, 0) : Vec2f(0, -aligned_dim.y/2));
 
         scrolled = Maths::Round((tl-button_pos).Length()/(dim.x > dim.y ? aligned_dim.x : aligned_dim.y)*100.0f)/100.0f;
-        //GUI::DrawText("PAGE "+getPage(), tl-Vec2f(50,-15), color_black);
+        
         // track
-        GUI::DrawFramedPane(tl, br);
+        if (alpha == 255) GUI::DrawFramedPane(tl, br);
+        else GUI::DrawPane(tl, br, SColor(alpha,255,255,255));
         // button
-        style == 0 ? GUI::DrawPane(drawpos, drawpos+button_dim) : GUI::DrawSunkenPane(drawpos, drawpos+button_dim);
+        style == 0 || alpha != 255 ? GUI::DrawPane(drawpos, drawpos+button_dim, SColor(alpha,255,255,255)) : GUI::DrawSunkenPane(drawpos, drawpos+button_dim);
     }
 
     u16 getPage()
