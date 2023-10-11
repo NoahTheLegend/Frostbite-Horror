@@ -27,7 +27,6 @@ class CheckBox {
 
     void render(u8 alpha)
     {
-        if (alpha != 255) return;
         CControls@ controls = getControls();
         if (controls is null) return;
 
@@ -44,11 +43,11 @@ class CheckBox {
             }
             else capture = false;
         }
-        
-        if (state) // active
-            GUI::DrawSunkenPane(tl, br);
+            
+        if (!state || alpha != 255) // active
+            GUI::DrawPane(tl, br, SColor(alpha,255,255,255));
         else
-            GUI::DrawFramedPane(tl, br);
+            GUI::DrawSunkenPane(tl, br);
     }
 
     bool hover(Vec2f mpos)

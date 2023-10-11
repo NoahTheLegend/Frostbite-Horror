@@ -94,13 +94,6 @@ class MessageBox
         lines_scrolled = 0;
         
         slider = Slider("scroll", tl-Vec2f(15,0), Vec2f(15, dim.y), Vec2f(15,15), Vec2f(16,16), 1.0f, 0);
-
-        if (getRules() !is null)
-        {
-            ClientVars@ mars;
-            if (getRules().get("ClientVars", @mars))
-                this.vars = mars;
-        }
     }
 
     Message@[] order_list;
@@ -128,22 +121,9 @@ class MessageBox
         return 0;
     }
 
-    bool UpdateVars()
-    {
-        if (getRules().hasTag("update_clientvars"))
-        {
-            ClientVars@ mars;
-            if (getRules().get("ClientVars", @mars))
-                this.vars = mars;
-
-            return true;
-        }
-        return false;
-    }
-    
     void render()
     {
-        UpdateVars();
+        if (vars is null) return;
         GUI::SetFont("CascadiaCodePL_12");
 
         slider.render(255);
@@ -337,7 +317,7 @@ class MessageBox
             GUI::DrawText(lines[i], l_pos, copy_color_white);
         }
 
-        GUI::DrawText("out: "+lines_outbound+"\nscrolled: "+scroll+"\nlines scrolled: "+lines_scrolled+"\noffset: "+scroll_offset, tl - Vec2f(170, -20), color_black);
+        //GUI::DrawText("out: "+lines_outbound+"\nscrolled: "+scroll+"\nlines scrolled: "+lines_scrolled+"\noffset: "+scroll_offset, tl - Vec2f(170, -20), color_black);
     }
 
     // writes a message symbol by symbol
@@ -410,26 +390,19 @@ string formDefaultTitle(CPlayer@ this)
 
 void addMessage(string text)
 {
-    Message msg(text, "", 4, true, 255, 1);
+    Message msg(text, "", 4, true && !isMuted(), 255, 1);
     addMessage(msg);
 }
 
 void addMessage(string text, string title)
 {
-    Message msg(text, title, 4, true, 255, 1);
+    Message msg(text, title, 4, true && !isMuted(), 255, 1);
     addMessage(msg);
 }
 
 void addMessage(string text, string title, u8 title_offset, bool playsound, u16 length, u8 delay)
 {
-    bool mute = false;
-    ClientVars@ vars;
-    if (getRules().get("ClientVars", @vars))
-    {
-        mute = vars.msg_mute;
-    }
-
-    Message msg(text, title, title_offset, playsound && !mute, length, delay);
+    Message msg(text, title, title_offset, playsound && !isMuted(), length, delay);
     addMessage(msg);
 }
 
@@ -443,4 +416,15 @@ void addMessage(Message msg)
             box.addMessage(msg);
         }
     }
+}
+
+bool isMuted()
+{
+    bool mute = false;
+    ClientVars@ vars;
+    if (getRules().get("ClientVars", @vars))
+    {
+        mute = vars.msg_mute;
+    }
+    return mute;
 }

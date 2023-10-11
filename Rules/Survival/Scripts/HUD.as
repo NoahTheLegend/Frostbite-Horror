@@ -36,6 +36,12 @@ void onRender(CRules@ this)
     	{
     	    if (box !is null)
     	    {
+            	ClientVars@ vars;
+            	if (getRules().get("ClientVars", @vars))
+            	{
+            	    box.vars = vars;
+				}
+
     	        box.render();
     	    }
     	}
@@ -62,7 +68,7 @@ void blobTick(CBlob@ this)
 
 	if (this.isKeyJustPressed(key_action1))
 	{
-		if (XORRandom(2) == 0) addMessage("onetwo,THREEFOURFIVE!!!six?seven.eight,nine,teneleventwelvethirteen fourteen fifteen AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"+XORRandom(999), formDefaultTitle(null));
+		if (XORRandom(2) == 0) addMessage("onetwo,THREEFOURFIVE!!!sixseveneight,nine,teneleventwelvethirteen fourteen fifteen"+XORRandom(999), formDefaultTitle(null));
 		else addMessage("lol", formDefaultTitle(null));
 	}
 

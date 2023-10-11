@@ -64,8 +64,15 @@ class ConfigMenu {
         else if (state == 1 || state == 3) // 1 opening, 3 closing
         {
             // todo: open anim
-            if (state == 1) state = 2;
-            else state = 0;
+            if (state == 1)
+            {
+                state = 2;
+            }
+            else
+            {
+                getRules().Tag("update_clientvars");
+                state = 0;
+            }
         }
         else
         {
@@ -102,7 +109,7 @@ class Section {
 
         tl = pos;
         br = pos+dim;
-        padding = Vec2f(15,15);
+        padding = Vec2f(15, 10);
     }
 
     void addOption(Option@ option)
@@ -113,11 +120,14 @@ class Section {
     void render(u8 alpha)
     {
         SColor col_white = SColor(alpha,255,255,255);
-        GUI::SetFont("RockwellMT_14");
+        SColor col_grey = SColor(alpha,235,235,235);
 
         GUI::DrawPane(tl, br, SColor(55,255,255,255));
-        GUI::DrawText(title, pos+padding, col_white);
-        GUI::DrawRectangle(tl+padding + Vec2f(0,10), Vec2f(br.x-padding.x, padding.y+5 + 10), col_white);
+        {
+            GUI::SetFont("RockwellMT-Bold_18");
+            GUI::DrawText(title, pos+padding, col_white);
+        }
+        GUI::DrawRectangle(tl+padding + Vec2f(0,28), Vec2f(br.x-padding.x, tl.y+padding.y + 30), col_grey);
         
         for (u8 i = 0; i < options.size(); i++)
         {
@@ -130,6 +140,7 @@ class Option {
     string text;
     Vec2f pos;
     bool has_slider;
+    f32 slider_startpos;
     bool has_check;
 
     Slider slider;
@@ -141,21 +152,42 @@ class Option {
         pos = _pos;
         has_slider = _has_slider;
         has_check = _has_check;
+        slider_startpos = 0.5f;
 
         if (has_slider)
-            slider = Slider("option_slider", pos+Vec2f(0,15), Vec2f(100,16), Vec2f(25,15), Vec2f(16,16), 1.0f, 0);
+        {
+            slider = Slider("option_slider", pos+Vec2f(0,23), Vec2f(100,15), Vec2f(15,15), Vec2f(8,8), slider_startpos, 0);
+        }
         if (has_check)
-            check = CheckBox(false, pos, Vec2f(20,20));
+            check = CheckBox(false, pos+Vec2f(0,1), Vec2f(18,18));
+    }
+
+    void setSliderPos(f32 scroll)
+    {
+        slider.setScroll(scroll);
+    }
+
+    void setCheck(bool flagged)
+    {
+        check.state = flagged;
     }
 
     void render(u8 alpha)
     {
+        SColor col_white = SColor(alpha,255,255,255);
         if (has_slider)
+        {
             slider.render(alpha);
+            GUI::DrawText((Maths::Round(slider.scrolled*100))+"%", slider.pos+slider.dim+Vec2f(10,-18), col_white);
+        }
         if (has_check)
+        {
             check.render(alpha);
+        }
         
-        GUI::SetFont("RockwellMT_14");
-        GUI::DrawText(text, has_check?pos+Vec2f(30,0):pos, SColor(alpha,255,255,255));
+        {
+            GUI::SetFont("RockwellMT_14");
+            GUI::DrawText(text, has_check?pos+Vec2f(25,0):pos, col_white);
+        }
     }
 };

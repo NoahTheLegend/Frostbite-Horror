@@ -26,7 +26,8 @@ class Slider
         snap_points = _snap_points;
 
         captured = false;
-        button_pos = button_pos+dim*start_pos;
+
+        button_pos = pos+dim*start_pos-button_dim/2;
         tl = pos;
         br = pos+dim;
         scrolled = 0; 
@@ -45,7 +46,7 @@ class Slider
             if ((controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
             {
                 captured = true;
-                button_pos = mpos-Vec2f(0,8);
+                button_pos = mpos-(dim.x >= dim.y ? Vec2f(9,0) : Vec2f(0,8));
             }
             else captured = false;
             
@@ -106,6 +107,11 @@ class Slider
         Vec2f edge_br = button_pos+button_dim+capture_margin;
         return mpos.x >= edge_tl.x && mpos.x <= edge_br.x
             && mpos.y >= edge_tl.y && mpos.y <= edge_br.y;
+    }
+
+    void setScroll(f32 dist)
+    {
+        button_pos = pos+dim*dist-button_dim/2;
     }
 
     void scrollBy(f32 dist, const bool do_snap = false) // positive/negative value corresponds by x and y axis
