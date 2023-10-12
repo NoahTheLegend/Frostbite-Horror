@@ -5,7 +5,7 @@
 
 void onInit(CRules@ this)
 {
-    if (getLocalPlayer() !is null)
+    //if (getLocalPlayer() !is null)
 	{
         // init the class
         ClientVars setvars();
