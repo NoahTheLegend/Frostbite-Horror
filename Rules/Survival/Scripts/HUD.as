@@ -4,7 +4,8 @@ void onInit(CRules@ this)
 {
     int id = Render::addScript(Render::layer_last, "HUD.as", "RenderHumanCursor", 50000);
 	
-	if (getLocalPlayer() !is null)
+	//if (getLocalPlayer() !is null)
+	if (isClient())
 	{
 		MessageBox setbox(30, Vec2f(getDriver().getScreenWidth()/3, 150), Vec2f(20, 15), 16);
 		this.set("MessageBox", @setbox);
@@ -29,7 +30,7 @@ void onRestart(CRules@ this)
 
 void onRender(CRules@ this)
 {
-	if (getLocalPlayer() !is null)
+	if (isClient())
 	{
 		MessageBox@ box;
     	if (this.get("MessageBox", @box))

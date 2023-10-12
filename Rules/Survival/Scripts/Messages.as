@@ -6,6 +6,7 @@
 
 const u16 scrw = getDriver().getScreenWidth();
 const u16 scrh = getDriver().getScreenHeight();
+bool was_press = false;
 
 u8 hud_transparency = 190;
 const u8 line_height = 12;
@@ -77,8 +78,13 @@ class MessageBox
     u8 message_gap;
     ClientVars vars;
 
+    Vec2f hidebar_tl;
+    Vec2f hidebar_br;
+
     Vec2f tl;
     Vec2f br;
+
+    bool hidden;
 
     MessageBox(u8 _max_history_size, Vec2f _dim, Vec2f _padding, u8 _message_gap = 0)
     {
@@ -90,10 +96,14 @@ class MessageBox
 
         tl = Vec2f(scrw-dim.x, 0);
         br = Vec2f(scrw, dim.y);
+        hidebar_tl = Vec2f(tl.x, br.y-10);
+        hidebar_br = Vec2f(br.x, br.y+5);
         wrap_edge = dim.x-padding.x*2;
         lines_scrolled = 0;
         
         slider = Slider("scroll", tl-Vec2f(15,0), Vec2f(15, dim.y), Vec2f(15,15), Vec2f(16,16), 1.0f, 0);
+        
+        hidden = true;
     }
 
     Message@[] order_list;
@@ -136,12 +146,58 @@ class MessageBox
         
         handleOrder();
         int history_size = handleHistory(); // in lines
+        handleHideBar();
 
         u8 was_scroll = wasMouseScroll(); // 1 - up, 2 - down
         if (was_scroll != 0 && mouseHovered(this, slider))
         {
             slider.scrollBy(was_scroll == 1 ? Maths::Min(-1, -25+history_size/4) : Maths::Max(1, 25-history_size/4));
         }
+    }
+
+    void handleHideBar()
+    {
+        CControls@ controls = getControls();
+        if (controls !is null)
+        {
+            Vec2f mpos = controls.getInterpMouseScreenPos();
+            bool hovering_hidebar = hover(mpos, hidebar_tl+Vec2f(17,0), hidebar_br);
+            if (hovering_hidebar && (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
+            {
+                if (!was_press)
+                {
+                    hidden = !hidden;
+                    was_press = true;
+                }
+            }
+            else was_press = false;
+
+            if (!hidden)
+            {
+                tl.y = Maths::Lerp(tl.y, -dim.y+5, 0.25f);
+                br.y = Maths::Lerp(br.y, 5, 0.25f);
+            }
+            else
+            {
+                tl.y = Maths::Lerp(tl.y, 0, 0.25f);
+                br.y = Maths::Lerp(br.y, dim.y, 0.25f);             
+            }
+
+            if (Maths::Ceil(hidebar_tl.y) != Maths::Ceil(br.y-10))
+            {
+                hidebar_tl = Vec2f(tl.x, br.y-10);
+                hidebar_br = Vec2f(br.x, br.y+5);
+                slider.pos = tl-Vec2f(15,0);
+                slider.recalculatePos(); 
+            }
+
+            drawHideBar(hidebar_tl, hidebar_br, hovering_hidebar);
+        }
+    }
+
+    void drawHideBar(Vec2f htl, Vec2f hbr, bool hovering)
+    {
+        hovering ? GUI::DrawPane(htl, hbr) : GUI::DrawSunkenPane(htl, hbr);
     }
 
     // process and draw recent message
@@ -428,4 +484,10 @@ bool isMuted()
         mute = vars.msg_mute;
     }
     return mute;
+}
+
+bool hover(Vec2f mpos, Vec2f tl, Vec2f br)
+{
+    return mpos.x >= tl.x && mpos.x <= br.x
+        && mpos.y >= tl.y && mpos.y <= br.y;
 }

@@ -33,6 +33,13 @@ class Slider
         scrolled = 0; 
     }
 
+    void recalculatePos()
+    {
+        button_pos = pos + (dim-button_dim)*scrolled;
+        tl = pos;
+        br = pos+dim;
+    }
+
     void render(u8 alpha)
     {
         CControls@ controls = getControls();
