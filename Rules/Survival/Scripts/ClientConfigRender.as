@@ -69,7 +69,7 @@ void onRender(CRules@ this)
     }
 }
 
-void SerializeVars(CRules@ this, ConfigMenu@ menu)
+void SerializeVars(CRules@ this, ConfigMenu@ menu) // ...manually
 {
     if (menu is null)
     {
@@ -123,7 +123,7 @@ void SetupConfig(CRules@ this)
         mute.setCheck(vars.msg_mute);
         messages.addOption(mute);
 
-        Option volume("Sound volume", mute.pos+Vec2f(0,25), true, false);
+        Option volume("Sound volume modifier", mute.pos+Vec2f(0,25), true, false);
         volume.setSliderPos(vars.msg_volume/max_vol);
         messages.addOption(volume);
 

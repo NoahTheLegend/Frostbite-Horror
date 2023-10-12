@@ -16,6 +16,8 @@ class ConfigMenu {
     Vec2f br;
     Section[] sections;
 
+    Vec2f target_dim;
+
     ConfigMenu(Vec2f _pos, Vec2f _dim)
     {
         pos = _pos;
@@ -27,6 +29,8 @@ class ConfigMenu {
         global_alpha = 0;
         state_change_time = 0;
         state = 0;
+
+        target_dim = Vec2f(32,32);
     }
 
     void addSection(Section@ section)
@@ -46,39 +50,66 @@ class ConfigMenu {
         if (controls is null) return;
 
         Vec2f mpos = controls.getInterpMouseScreenPos();
+        Vec2f btn_dim = Vec2f(32,32);
+        bool hovering = hover(mpos, tl, tl+btn_dim);
 
         if (state == 0)
         {
-            Vec2f btn_dim = Vec2f(32,32);
-
-            bool hovering = hover(mpos, tl, tl+btn_dim);
-
             if (hovering && (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
                 state = 1;
-
+        
             GUI::DrawPane(tl, tl+btn_dim, SColor(hovering?200:100,255,255,255));
-            GUI::DrawIcon("SettingsMenuIcon.png", 0, btn_dim, tl, 0.5f, 0.5f, SColor(hovering?200:100,255,255,255));
-
             global_alpha = 0;
         }
-        else if (state == 1 || state == 3) // 1 opening, 3 closing
+
+        if (state == 1 || state == 3) // 1 opening, 3 closing
         {
             // todo: open anim
             if (state == 1)
             {
-                state = 2;
+                target_dim.x = Maths::Lerp(target_dim.x, dim.x, 0.35f);
+                if (target_dim.x >= dim.x-1)
+                {
+                    target_dim.y = Maths::Lerp(target_dim.y, dim.y, 0.35f);
+                    global_alpha = Maths::Min(255, global_alpha+15);
+                }
+                if (target_dim.y >= dim.y-1)
+                    state = 2;
+
+                GUI::DrawPane(tl, pos+target_dim, SColor(155,255,255,255));
+
+                for (u8 i = 0; i < sections.size(); i++)
+                {
+                    if (sections[i].pos.y+sections[i].dim.y > target_dim.y) continue;
+                    sections[i].render(global_alpha);
+                }
             }
             else
             {
-                getRules().Tag("update_clientvars");
-                state = 0;
+                target_dim.x = Maths::Lerp(target_dim.x, 32, 0.5f);
+                target_dim.y = Maths::Lerp(target_dim.y, 32, 0.5f);
+
+                GUI::DrawPane(tl, pos+target_dim, SColor(155,255,255,255));
+
+                for (u8 i = 0; i < sections.size(); i++)
+                {
+                    if (sections[i].pos.y+sections[i].dim.y >= target_dim.y
+                        || sections[i].pos.x+sections[i].dim.x >= target_dim.x) continue;
+                    sections[i].render(global_alpha);
+                }
+
+                if (target_dim.x <= 33 && target_dim.y <= 33)
+                {
+                    getRules().Tag("update_clientvars");
+                    state = 0;
+                    target_dim = Vec2f(32,32);
+                }
             }
         }
-        else
+        else if (state == 2)
         {
             GUI::DrawPane(tl, br, SColor(155,255,255,255));
 
-            bool hovering = hover(mpos, br, br+Vec2f(32,32)); // todo, close button
             if (hovering && (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
                 state = 3;
 
@@ -88,6 +119,8 @@ class ConfigMenu {
                 sections[i].render(global_alpha);
             }
         }
+
+        GUI::DrawIcon("SettingsMenuIcon.png", 0, btn_dim, tl, 0.5f, 0.5f, SColor(hovering?200:100,255,255,255));
     }
 };
 
@@ -101,6 +134,8 @@ class Section {
     Vec2f br;
     Option[] options;
 
+    Vec2f title_dim;
+
     Section(string _title, Vec2f _pos, Vec2f _dim)
     {
         title = _title;
@@ -110,6 +145,8 @@ class Section {
         tl = pos;
         br = pos+dim;
         padding = Vec2f(15, 10);
+        
+        GUI::GetTextDimensions(title, title_dim);
     }
 
     void addOption(Option@ option)
@@ -125,7 +162,7 @@ class Section {
         GUI::DrawPane(tl, br, SColor(55,255,255,255));
         {
             GUI::SetFont("RockwellMT-Bold_18");
-            GUI::DrawText(title, pos+padding, col_white);
+            GUI::DrawText(title, pos + Vec2f(title_dim.x + padding.x/2, padding.y), col_white);
         }
         GUI::DrawRectangle(tl+padding + Vec2f(0,28), Vec2f(br.x-padding.x, tl.y+padding.y + 30), col_grey);
         

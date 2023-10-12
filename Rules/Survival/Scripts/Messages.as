@@ -324,8 +324,9 @@ class MessageBox
     string write(Message@ msg)
     {
         if (msg.playsound)
-            Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), vars.msg_volume, vars.msg_pitch+XORRandom(11)*0.01f);
-        
+        {
+            Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), Maths::Pow(vars.msg_volume, 2), vars.msg_pitch+XORRandom(11)*0.01f);
+        }
         if (msg.ended())
         {
             if (history.size() > max_history_size)

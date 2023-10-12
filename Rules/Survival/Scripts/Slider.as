@@ -27,7 +27,7 @@ class Slider
 
         captured = false;
 
-        button_pos = pos+dim*start_pos-button_dim/2;
+        button_pos = pos + (dim-button_dim)*start_pos;
         tl = pos;
         br = pos+dim;
         scrolled = 0; 
@@ -111,7 +111,7 @@ class Slider
 
     void setScroll(f32 dist)
     {
-        button_pos = pos+dim*dist-button_dim/2;
+        button_pos = pos + (dim-button_dim)*dist;
     }
 
     void scrollBy(f32 dist, const bool do_snap = false) // positive/negative value corresponds by x and y axis
