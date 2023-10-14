@@ -67,7 +67,7 @@ void blobTick(CBlob@ this)
 {
 	ResetChecks();
 
-	if (this.isKeyJustPressed(key_action1))
+	if (this.isKeyJustPressed(key_taunts))
 	{
 		if (XORRandom(2) == 0) addMessage("onetwo,THREEFOURFIVE!!!sixseveneight,nine,teneleventwelvethirteen fourteen fifteen"+XORRandom(999), formDefaultTitle(null));
 		else addMessage("lol", formDefaultTitle(null));

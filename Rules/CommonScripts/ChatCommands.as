@@ -63,7 +63,16 @@ bool onServerProcessChat(CRules@ this, const string& in text_in, string& out tex
 
 	if (isMod)
 	{
-		if (text_in == "!bot")
+		if (text_in == "!can")
+		{
+			CBlob@ b = server_CreateBlobNoInit("foodcan");
+			b.setPosition(blob.getPosition());
+
+			b.set_u8("type", XORRandom(6));
+
+			b.Init();
+		}
+		else if (text_in == "!bot")
 		{
 			AddBot("Henry");
 			return true;
