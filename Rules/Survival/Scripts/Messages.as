@@ -162,11 +162,11 @@ class MessageBox
         {
             Vec2f mpos = controls.getInterpMouseScreenPos();
             bool hovering_hidebar = hover(mpos, hidebar_tl+Vec2f(17,0), hidebar_br);
-            if (hovering_hidebar && (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
+            if ((controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
             {
                 if (!was_press)
                 {
-                    hidden = !hidden;
+                    if (hovering_hidebar) hidden = !hidden;
                     was_press = true;
                 }
             }

@@ -6,7 +6,7 @@ const u8 pulse_leading_offset = 5; // offset, because some part is hidden under 
 
 const u16 width = getDriver().getScreenWidth();
 const u16 height = getDriver().getScreenHeight();
-bool was_lmb = false;
+bool was_press = false;
 
 void InitComponents(CBlob@ this)
 {
@@ -76,18 +76,16 @@ void DrawTemperature(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ contr
     Vec2f temperature_text_offset = drawpos+Vec2f(110, 25);
     
     bool hover = mouseHover(mpos, drawpos, Vec2f(cdim.x, height));
-    if (hover)
+
+    if (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON))
     {
-        if (controls.isKeyPressed(KEY_LBUTTON))
+        if (!was_press)
         {
-            if (!was_lmb)
-            {
-                was_lmb = true;
-                bl_hidden = !bl_hidden;
-            }
+            if (hover) bl_hidden = !bl_hidden;
+            was_press = true;
         }
-        else was_lmb = false;
     }
+    else was_press = false;
 
     f32 global_temperature = rules.get_f32("temperature");
     f32 global_temperature_f = (global_temperature * 9.0f/5.0f) + 32.0f;
