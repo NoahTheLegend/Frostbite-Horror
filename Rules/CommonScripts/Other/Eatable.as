@@ -19,6 +19,7 @@ void onInit(CBlob@ this)
 
     // not spritesheet! Only animation frames (i.e. 0 and 8)
     if (!this.exists("type")) this.set_u8("type", 0);
+    if (!this.exists("invframe")) this.set_u8("invframe", this.inventoryIconFrame);
 
     FoodStats stats = getFoodStats(this.getName(), this.get_u8("type"));
     this.set("FoodStats", stats);
@@ -109,8 +110,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 
             this.setInventoryName(name);
             this.set_u8("type", frame);
-            if (this.getSprite() !is null)
-                this.getSprite().animation.frame = frame;
+            CSprite@ sprite = this.getSprite();
+            if (sprite !is null)
+            {
+                sprite.animation.frame = frame;
+                this.SetInventoryIcon(sprite.getConsts().filename, this.get_u8("invframe")+frame, Vec2f(16,16));
+            }
         }
     }
 	else if (cmd == this.getCommandID("menu"))
@@ -125,11 +130,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     }
     else if (cmd == this.getCommandID("open_canned"))
     {
-        AddSpecificSpriteLayer(this);
+        CSprite@ sprite = this.getSprite();
+        if (isClient() && sprite !is null)
+        {
+            this.getSprite().PlaySound("TinCanOpen.ogg");
+            AddSpecificSpriteLayer(this, sprite);
+        }
         this.Untag("canned_food");
     }
     else if (cmd == this.getCommandID("eat100"))
     {
+        playEatSound(this); 
+
         u16 callerid;
         if (!params.saferead_u16(callerid)) return;
         CBlob@ caller = getBlobByNetworkID(callerid);
@@ -139,6 +151,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     }
     else if (cmd == this.getCommandID("eat50"))
     {
+        playEatSound(this); 
+
         u16 callerid;
         if (!params.saferead_u16(callerid)) return;
         CBlob@ caller = getBlobByNetworkID(callerid);
@@ -153,6 +167,8 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
     }
     else if (cmd == this.getCommandID("eat25"))
     {
+        playEatSound(this); 
+        
         u16 callerid;
         if (!params.saferead_u16(callerid)) return;
         CBlob@ caller = getBlobByNetworkID(callerid);
@@ -229,7 +245,7 @@ void Menu(CBlob@ this, CBlob@ caller)
 
 void onRender(CSprite@ this)
 {
-    //if (!(isClient() && isServer())) return;
+    if (!(isClient() && isServer())) return;
 
     CBlob@ blob = this.getBlob();
     if (blob is null) return;
@@ -241,11 +257,8 @@ void onRender(CSprite@ this)
     GUI::DrawText(stats.name+"\nh "+stats.hunger+"\nt "+stats.thirst+"\nhp "+blob.getHealth(), pos, SColor(255,255,255,0));
 }
 
-void AddSpecificSpriteLayer(CBlob@ this)
+void AddSpecificSpriteLayer(CBlob@ this, CSprite@ sprite)
 {
-    CSprite@ sprite = this.getSprite();
-    if (sprite is null) return;
-    
     CSpriteLayer@ open_can = sprite.getSpriteLayer("open_can");
         if (open_can is null)
     {

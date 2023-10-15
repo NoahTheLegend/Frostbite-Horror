@@ -110,3 +110,14 @@ void emptyCanned(CBlob@ this, CBlob@ caller, u16 callerid)
         // todo: restore hunger here
     }
 }
+
+void playEatSound(CBlob@ this)
+{
+    if (!isClient()) return;
+
+    CSprite@ sprite = this.getSprite();
+    if (sprite !is null)
+    {
+        sprite.PlaySound(this.get_string("eat sound"), 1.0f, 0.8f+XORRandom(150)*0.001f);
+    }
+}
