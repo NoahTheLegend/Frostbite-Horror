@@ -80,7 +80,6 @@ class Slider
         Vec2f drawpos = button_pos + (dim.y > dim.x ? Vec2f(-aligned_dim.x/2, 0) : Vec2f(0, -aligned_dim.y/2));
 
         scrolled = Maths::Round((tl-button_pos).Length()/(dim.x > dim.y ? aligned_dim.x : aligned_dim.y)*100.0f)/100.0f;
-        
         // track
         if (alpha == 255) GUI::DrawFramedPane(tl, br);
         else GUI::DrawPane(tl, br, SColor(alpha,255,255,255));

@@ -22,6 +22,9 @@ class CheckBox {
     {
         Sound::Play("select.ogg"); // make sure this plays for local player and they hear it
         state = !state;
+
+        getRules().Tag("update_clientvars");
+        
         return state;
     }
 

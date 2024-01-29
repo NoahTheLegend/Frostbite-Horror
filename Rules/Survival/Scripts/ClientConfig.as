@@ -56,7 +56,9 @@ class ConfigMenu {
         if (state == 0)
         {
             if (hovering && (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
+            {
                 state = 1;
+            }
         
             GUI::DrawPane(tl, tl+btn_dim, SColor(hovering?200:100,255,255,255));
             global_alpha = 0;
@@ -161,7 +163,7 @@ class Section {
 
         GUI::DrawPane(tl, br, SColor(55,255,255,255));
         {
-            GUI::SetFont("RockwellMT-Bold_18");
+            GUI::SetFont("RockwellMT_18");
             GUI::DrawText(title, pos + Vec2f(title_dim.x + padding.x/2, padding.y), col_white);
         }
         GUI::DrawRectangle(tl+padding + Vec2f(0,28), Vec2f(br.x-padding.x, tl.y+padding.y + 30), col_grey);
@@ -204,6 +206,11 @@ class Option {
         slider.setScroll(scroll);
     }
 
+    void setSliderTextMode(u8 mode)
+    {
+        slider.mode = mode;
+    }
+
     void setCheck(bool flagged)
     {
         check.state = flagged;
@@ -211,20 +218,25 @@ class Option {
 
     void render(u8 alpha)
     {
+        GUI::SetFont("menu");
         SColor col_white = SColor(alpha,255,255,255);
         if (has_slider)
         {
             slider.render(alpha);
-            GUI::DrawText((Maths::Round(slider.scrolled*100))+"%", slider.pos+slider.dim+Vec2f(10,-18), col_white);
+            string text = Maths::Round(slider.scrolled*100)+"%";
+            if (slider.mode == 1)
+                text = ""+Maths::Abs(Maths::Clamp(slider.step.x+1,1,slider.snap_points+1));
+            else if (slider.mode == 2)
+                text = slider.description;
+
+            GUI::DrawText(text, slider.pos+slider.dim+Vec2f(10,-18), col_white);
         }
         if (has_check)
         {
             check.render(alpha);
         }
-        
-        {
-            GUI::SetFont("RockwellMT_14");
-            GUI::DrawText(text, has_check?pos+Vec2f(25,0):pos, col_white);
-        }
+
+        GUI::SetFont("RockwellMT_14");
+        GUI::DrawText(text, has_check?pos+Vec2f(25,0):pos, col_white);
     }
 };

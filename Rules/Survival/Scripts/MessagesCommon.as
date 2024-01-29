@@ -1,3 +1,5 @@
+#include "Utilities.as";
+
 bool mouseHovered(MessageBox@ this, Slider slider)
 {
     CControls@ controls = getControls();
@@ -16,33 +18,22 @@ string formDefaultTitle(CPlayer@ this)
 {
     if (this is null) return "Unknown source";
     else return this.getCharacterName()+" said:";
-}
+}  
 
-void addMessage(string text)
+MessageText makeText(string text = "NULL", string title = formDefaultTitle(null), u8 title_offset = 4, u16 max_length = 255, u8 delay = 1, bool playsound = !areMessagesMuted())
 {
-    Message msg(text, "", 4, true && !areMessagesMuted(), 255, 1);
-    addMessage(msg);
-}
+    MessageText messageText(text, title, title_offset, max_length, delay, playsound);
+    return messageText;
+}      
 
-void addMessage(string text, string title)
-{
-    Message msg(text, title, 4, true && !areMessagesMuted(), 255, 1);
-    addMessage(msg);
-}
-
-void addMessage(string text, string title, u8 title_offset, bool playsound, u16 length, u8 delay)
-{
-    Message msg(text, title, title_offset, playsound && !areMessagesMuted(), length, delay);
-    addMessage(msg);
-}
-
-void addMessage(Message msg)
+void addMessage(MessageText messageText)
 {
     MessageBox@ box;
     if (getRules().get("MessageBox", @box))
     {
         if (box !is null)
         {
+            Message msg(messageText);
             box.addMessage(msg);
         }
     }

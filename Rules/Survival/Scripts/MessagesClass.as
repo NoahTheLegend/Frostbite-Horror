@@ -15,33 +15,21 @@ const u8 line_height = 12;
 
 class Message
 {
-    string text;
-    string title;
-    u8 title_offset;
-    SColor title_color; // todo
-    string[] text_lines;
-    f32 height;
-    bool playsound;
-    u16 max_length;
+    MessageText messageText;
     string text_to_write;
-    u8 delay;
+    string[] text_lines;
+
+    f32 height;
     u8 title_alpha;
-
     bool completed;
-    Vec2f old_pos;
-
-    Message(string _text, string _title, u8 _title_offset = 4, bool _playsound = true, u16 _max_length = 255, u8 _delay = 1)
+    Vec2f old_pos;          // lerped sliding
+    
+    Message(MessageText _messageText)
     {
-        text = _text;
-        title = _title;
-        title_offset = _title_offset;
-        playsound = _playsound;
-        max_length = _max_length;
-        delay = _delay;
-
-        title_alpha = 55;
-        height = 0;
-        text_to_write = "";
+        messageText = _messageText;
+        height = 0;         // relative dimension
+        title_alpha = 55;   // opacity on-create
+        text_to_write = ""; // render text
         completed = false;
     }
 
@@ -49,7 +37,9 @@ class Message
     {
         if (!ended())
         {
-            string full = this.text_to_write = text.substr(0, text_to_write.size()+1);
+            string text = messageText.text;
+
+            string full = text_to_write = text.substr(0, text_to_write.size()+1); // add symbols instead of replacing whole part
             string char = full.substr(full.size()-1, 1);
             return char;
         }
@@ -58,7 +48,7 @@ class Message
 
     bool ended()
     {
-        if (!completed) completed = text_to_write.size() == text.size();
+        if (!completed) completed = text_to_write.size() == messageText.text.size();
         return completed;
     }
 
@@ -68,17 +58,42 @@ class Message
     }
 };
 
+class MessageText
+{
+    string text;
+    string title;
+    u8 title_offset;
+    SColor title_color; // todo
+
+    u16 max_length;
+    u8 delay;
+    bool playsound;
+
+    MessageText(string _text, string _title, u8 _title_offset, u16 _max_length, u8 _delay, bool _playsound)
+    {
+        text = _text;                 // full text
+        title = _title;               // constant title
+        title_offset = _title_offset; // gap between title and text
+        max_length = _max_length;     // max message length
+        delay = _delay;               // amount of ticks to wait for next symbom to write
+        playsound = _playsound;       // play bzzt sound
+    }
+};
+
 class MessageBox
 {
-    u8 max_history_size;
     Vec2f dim;
     Vec2f padding;
-    u8 wait_time;
-    f32 wrap_edge;
-    Slider slider;
-    u16 lines_scrolled;
-    u8 message_gap;
+
     ClientVars vars;
+    Slider slider;
+
+    u8 max_history_size;
+    u8 wait_time;
+    
+    u16 lines_scrolled;
+    f32 wrap_edge;
+    u8 message_gap;
 
     Vec2f hidebar_tl;
     Vec2f hidebar_br;
@@ -90,26 +105,29 @@ class MessageBox
 
     MessageBox(u8 _max_history_size, Vec2f _dim, Vec2f _padding, u8 _message_gap = 0)
     {
-        max_history_size = _max_history_size;
         dim = _dim;
         padding = _padding;
-        wait_time = 0;
-        message_gap = _message_gap; // applies if bigger than distance between last lines of messages
+        
+        tl = Vec2f(scrw-dim.x, 0);              // box top left
+        br = Vec2f(scrw, dim.y);                // box bottom right
 
-        tl = Vec2f(scrw-dim.x, 0);
-        br = Vec2f(scrw, dim.y);
+        slider = Slider("scroll", tl-Vec2f(15,0), Vec2f(15, dim.y), Vec2f(15,15), Vec2f(16,16), 1.0f, 0);
+
+        max_history_size = _max_history_size;   // max amount of messages to buffer in array
+        wait_time = 0;                          // initial wait time for next symbol to write
+
+        message_gap = _message_gap;             // is applied when gap between messages is lesser than value
+        
         hidebar_tl = Vec2f(tl.x, br.y-10);
         hidebar_br = Vec2f(br.x, br.y+5);
         wrap_edge = dim.x-padding.x*2;
         lines_scrolled = 0;
-        
-        slider = Slider("scroll", tl-Vec2f(15,0), Vec2f(15, dim.y), Vec2f(15,15), Vec2f(16,16), 1.0f, 0);
-        
+
         hidden = true;
     }
 
-    Message@[] order_list;
-    Message@[] history;
+    Message@[] order_list; // messages waiting to be writter
+    Message@[] history;    // buffer
 
     void addMessage(Message msg)
     {
@@ -205,19 +223,25 @@ class MessageBox
     // process and draw recent message
     void handleOrder()
     {
-        if (order_list.size() > 0) // runs once, then decrements .size()
+        // runs once, then decrements .size()
+        if (order_list.size() > 0) 
         {
             Message@ msg = order_list[0];
             string written;
+            string title = msg.messageText.title;
+            u8 title_offset = msg.messageText.title_offset;
             bool endline = msg.ended();
-            // timer to draw next symbol
+            
+            // timer until next symbol
+            u8 delay = msg.messageText.delay;
             if (wait_time == 0)
             {
                 written = this.writeMessage(msg);
 
                 u8 extra_delay = getPunctuationDelay(written);
-                wait_time = msg.delay + extra_delay;
+                wait_time = delay + extra_delay;
             }
+
             msg.fadeIn(20);
 
             u8 l_size = msg.text_lines.size();
@@ -259,8 +283,8 @@ class MessageBox
                     if (i == l_size) // reserved for title
                     {
                         GUI::SetFont("CascadiaCodePL-Bold_13");
-                        newtext = msg.title;
-                        l_pos.y -= msg.title_offset;
+                        newtext = title;
+                        l_pos.y -= title_offset;
                         copy_color_white.setAlpha(msg.title_alpha);
                     }
                     else if (l_size > 0)
@@ -282,7 +306,7 @@ class MessageBox
         }
     }
 
-    // wraps text line at position, specify if line is last and is message end 
+    // wraps text line at position, specify if line is last and is message ending line
     void wrapText(Message@ msg, string l_text, u16 index, bool message_end)
     {
         for (u16 i = 1; i <= 12; i++)
@@ -321,6 +345,9 @@ class MessageBox
             Message@ msg = history[i];
             Message@ prev = order_list.size() > 0 && lines_scrolled == 0 ? order_list[0] : null;
 
+            string title = msg.messageText.title;
+            u8 title_offset = msg.messageText.title_offset;
+
             f32 prev_height = 0;
             if (prev !is null) prev_height = prev.height;
 
@@ -339,8 +366,8 @@ class MessageBox
 
                 if (j == l_size) // reserved for title
                 {
-                    newtext = msg.title;
-                    l_pos.y -= msg.title_offset;
+                    newtext = title;
+                    l_pos.y -= title_offset;
                     l_title = true;
                 }
                 else newtext = msg.text_lines[l_size-(j+1)];
@@ -381,9 +408,9 @@ class MessageBox
     // writes a message symbol by symbol
     string writeMessage(Message@ msg)
     {
-        if (msg.playsound)
+        if (msg.messageText.playsound)
         {
-            Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), Maths::Pow(vars.msg_volume, 2), vars.msg_pitch+XORRandom(11)*0.01f);
+            Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), vars.msg_volume_final, vars.msg_pitch_final+XORRandom(11)*0.01f);
         }
         if (msg.ended())
         {
