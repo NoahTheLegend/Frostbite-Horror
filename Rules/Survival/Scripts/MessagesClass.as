@@ -1,8 +1,10 @@
-#include "Slider.as";
-#include "ClientVars.as";
-
 // capped to framerate
 // staging may have issues
+
+#include "Slider.as";
+#include "ClientVars.as";
+#include "MessagesCommon.as";
+#include "Utilities.as";
 
 const u16 scrw = getDriver().getScreenWidth();
 const u16 scrh = getDriver().getScreenHeight();
@@ -19,7 +21,7 @@ class Message
     SColor title_color; // todo
     string[] text_lines;
     f32 height;
-    bool playsound; // todo
+    bool playsound;
     u16 max_length;
     string text_to_write;
     u8 delay;
@@ -203,7 +205,7 @@ class MessageBox
     // process and draw recent message
     void handleOrder()
     {
-        if (order_list.size() > 0)
+        if (order_list.size() > 0) // runs once, then decrements .size()
         {
             Message@ msg = order_list[0];
             string written;
@@ -211,7 +213,7 @@ class MessageBox
             // timer to draw next symbol
             if (wait_time == 0)
             {
-                written = this.write(msg);
+                written = this.writeMessage(msg);
 
                 u8 extra_delay = getPunctuationDelay(written);
                 wait_time = msg.delay + extra_delay;
@@ -377,7 +379,7 @@ class MessageBox
     }
 
     // writes a message symbol by symbol
-    string write(Message@ msg)
+    string writeMessage(Message@ msg)
     {
         if (msg.playsound)
         {
@@ -413,81 +415,3 @@ class MessageBox
         return index;
     }
 };
-
-u8 wasMouseScroll()
-{
-    CControls@ controls = getControls();
-    if (controls is null) return 0;
-
-    if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMIN))) return 1;
-    else if (controls.isKeyJustPressed(controls.getActionKeyKey(AK_ZOOMOUT))) return 2;
-
-    return 0;
-}
-
-bool mouseHovered(MessageBox@ this, Slider slider)
-{
-    CControls@ controls = getControls();
-    Vec2f mpos = controls.getMouseScreenPos();
-
-    bool isOnMessageBox = (mpos.x >= this.tl.x && mpos.x <= this.br.x && mpos.y >= this.tl.y && mpos.y <= this.br.y);
-    if (isOnMessageBox) return true;
-
-    bool isOnSlider = (mpos.x >= slider.tl.x && mpos.x <= slider.br.x && mpos.y >= slider.tl.y && mpos.y <= slider.br.y);
-    if (isOnSlider) return true;
-    
-    return false;
-}
-
-string formDefaultTitle(CPlayer@ this)
-{
-    if (this is null) return "Unknown source";
-    else return this.getCharacterName()+" said:";
-}
-
-void addMessage(string text)
-{
-    Message msg(text, "", 4, true && !isMuted(), 255, 1);
-    addMessage(msg);
-}
-
-void addMessage(string text, string title)
-{
-    Message msg(text, title, 4, true && !isMuted(), 255, 1);
-    addMessage(msg);
-}
-
-void addMessage(string text, string title, u8 title_offset, bool playsound, u16 length, u8 delay)
-{
-    Message msg(text, title, title_offset, playsound && !isMuted(), length, delay);
-    addMessage(msg);
-}
-
-void addMessage(Message msg)
-{
-    MessageBox@ box;
-    if (getRules().get("MessageBox", @box))
-    {
-        if (box !is null)
-        {
-            box.addMessage(msg);
-        }
-    }
-}
-
-bool isMuted()
-{
-    bool mute = false;
-    ClientVars@ vars;
-    if (getRules().get("ClientVars", @vars))
-    {
-        mute = vars.msg_mute;
-    }
-    return mute;
-}
-
-bool hover(Vec2f mpos, Vec2f tl, Vec2f br)
-{
-    return mpos.x >= tl.x && mpos.x <= br.x
-        && mpos.y >= tl.y && mpos.y <= br.y;
-}

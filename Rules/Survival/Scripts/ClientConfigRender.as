@@ -2,6 +2,7 @@
 
 #include "ClientVars.as";
 #include "ClientConfig.as";
+#include "Utilities.as";
 
 void onInit(CRules@ this)
 {
@@ -12,8 +13,8 @@ void onInit(CRules@ this)
 	    this.set("ClientVars", @setvars);
 
         bool vars_loaded = false;
-		ClientVars@ vars;
-        if (this.get("ClientVars", @vars))
+		ClientVars@ vars = getVars();
+        if (vars !is null)
         {
             vars_loaded = true;
         }
@@ -78,8 +79,8 @@ void SerializeVars(CRules@ this, ConfigMenu@ menu) // ...manually
         return;
     }
 
-    ClientVars@ vars;
-    if (getRules().get("ClientVars", @vars))
+    ClientVars@ vars = getVars();
+    if (vars !is null)
     {
         // section 0: Messages
         Option mute   = menu.sections[0].options[0];
@@ -111,8 +112,8 @@ void SetupConfig(CRules@ this)
     ConfigMenu setmenu(menu_pos, menu_dim);
     
     // keep order with saving vars
-    ClientVars@ vars;
-    if (getRules().get("ClientVars", @vars))
+    ClientVars@ vars = getVars();
+    if (vars !is null)
     {
         Vec2f section_pos = menu_pos;
         Section messages("Messages", section_pos, Vec2f(menu_dim.x/2, menu_pos.y + 150));

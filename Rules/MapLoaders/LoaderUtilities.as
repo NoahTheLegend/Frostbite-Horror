@@ -5,6 +5,7 @@
 #include "Hitters.as";
 #include "CustomBlocks.as";
 #include "ShadowCastHooks.as"
+#include "CustomSparks.as";
 
 const Vec2f[] directions =
 {
@@ -1061,7 +1062,7 @@ void OnIceTileHit(CMap@ map, u32 index)
 		Vec2f pos = map.getTileWorldPosition(index);
 
 		Sound::Play("GlassBreak2.ogg", pos, 1.0f, 0.8f);
-		sparks(pos, 1, 1);
+		customSparks(pos, 1, rnd_vel(2,1,10.0f), SColor(255,25,75+XORRandom(75),200+XORRandom(55)));
 	}
 }
 
@@ -1242,7 +1243,6 @@ void OnPolishedStoneTileHit(CMap@ map, u32 index)
 		Vec2f pos = map.getTileWorldPosition(index);
 
 		Sound::Play("PickStone" + (1 + XORRandom(3)), pos, 1.0f, 0.95f);
-		sparks(pos, 1, 1);
 	}
 }
 
@@ -1295,7 +1295,6 @@ void OnBackPolishedStoneTileHit(CMap@ map, u32 index)
 		Vec2f pos = map.getTileWorldPosition(index);
 
 		Sound::Play("PickStone" + (1 + XORRandom(3)), pos, 1.0f, 0.9f);
-		sparks(pos, 1, 1);
 	}
 }
 

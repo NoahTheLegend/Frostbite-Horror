@@ -1,4 +1,4 @@
-#include "Messages.as";
+#include "MessagesClass.as";
 
 void onInit(CRules@ this)
 {
@@ -37,9 +37,9 @@ void onRender(CRules@ this)
     	{
     	    if (box !is null)
     	    {
-            	ClientVars@ vars;
-            	if (getRules().get("ClientVars", @vars))
-            	{
+            	ClientVars@ vars = getVars();
+    			if (vars !is null)
+    			{
             	    box.vars = vars;
 				}
 
