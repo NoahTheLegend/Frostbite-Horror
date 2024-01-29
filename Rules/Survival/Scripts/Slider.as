@@ -8,6 +8,9 @@ class Slider
     Vec2f capture_margin; // extra area to capture
     f32 start_pos;
     u8 snap_points;
+    Vec2f step; // snap step in both axis
+    u8 mode;
+    string description;
 
     bool captured;
     f32 scrolled;
@@ -24,13 +27,16 @@ class Slider
         capture_margin = _capture_margin;
         start_pos = _start_pos;
         snap_points = _snap_points;
+        step = Vec2f(0,0);
+        mode = 0; // 0 - shows %, 1 - shows snapped point
+        description = "";
 
         captured = false;
 
         button_pos = pos + (dim-button_dim)*start_pos;
         tl = pos;
         br = pos+dim;
-        scrolled = 0; 
+        scrolled = 0;
     }
 
     void recalculatePos()
@@ -52,6 +58,7 @@ class Slider
         {
             if ((controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
             {
+                requestUpdate(mpos, button_pos);
                 captured = true;
                 button_pos = mpos-(dim.x >= dim.y ? Vec2f(9,0) : Vec2f(0,8));
             }
@@ -60,15 +67,16 @@ class Slider
             style = 1;
         }
         
-        Vec2f nearest_snap_point = button_pos;
+        Vec2f snap_point = button_pos;
         if (snap_points > 0)
         {
-            nearest_snap_point = getNearestSnapPoint();
+            snap_point = getNearestSnapPoint();
         }
 
         Vec2f snap = getSnap();
         Vec2f aligned_dim = Vec2f(dim.x-button_dim.x, dim.y-button_dim.y);
-        button_pos = clampPos(nearest_snap_point);
+        button_pos = clampPos(snap_point);
+        
         Vec2f drawpos = button_pos + (dim.y > dim.x ? Vec2f(-aligned_dim.x/2, 0) : Vec2f(0, -aligned_dim.y/2));
 
         scrolled = Maths::Round((tl-button_pos).Length()/(dim.x > dim.y ? aligned_dim.x : aligned_dim.y)*100.0f)/100.0f;
@@ -78,6 +86,11 @@ class Slider
         else GUI::DrawPane(tl, br, SColor(alpha,255,255,255));
         // button
         style == 0 || alpha != 255 ? GUI::DrawPane(drawpos, drawpos+button_dim, SColor(alpha,255,255,255)) : GUI::DrawSunkenPane(drawpos, drawpos+button_dim);
+    }
+
+    void requestUpdate(Vec2f a, Vec2f b)
+    {
+        if (a != b) getRules().Tag("update_clientvars");
     }
 
     u16 getPage()
@@ -99,13 +112,24 @@ class Slider
 
     void setSnap(int snap)
     {
-        snap_points = snap;
+        snap_points = snap-1;
+    }
+
+    f32 adjust(f32 x, f32 a, f32 b, f32 n, int&out interval_pos) 
+    {
+        f32 interval = (b - a) / n + 0.5f;
+        f32 nearest_anchor = a + interval * int((x - a) / interval + 0.5f);
+        interval_pos = Maths::Round((nearest_anchor - a) / interval);
+
+        //printf("x: "+x+" a: "+a+" b: "+b+" n: "+n+" anch "+nearest_anchor);
+        return Maths::Max(a, Maths::Min(b, nearest_anchor));
     }
 
     Vec2f getNearestSnapPoint() // must include button pos properly to negate skipping snappoints if button is too big
     {
-        Vec2f snap = getSnap();
-        return Vec2f(Maths::Round(button_pos.x/snap.x)*snap.x, Maths::Round(button_pos.y/snap.y)*snap.y);
+        Vec2f point = Vec2f(adjust(button_pos.x, pos.x, pos.x+dim.x-button_dim.x, snap_points, step.x),adjust(button_pos.y, pos.y, pos.y+dim.y-button_dim.y, snap_points, step.y));
+
+        return point;
     }
 
     bool hover(Vec2f mpos)
