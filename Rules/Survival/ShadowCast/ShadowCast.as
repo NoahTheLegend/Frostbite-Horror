@@ -181,7 +181,7 @@ void onTick(CRules@ this)
                 for(int i = 0; i < map_size; i++)
                 {
                     Tile tile = map.getTile(i);
-                    solids[i] = isSolidNotIce(getMap(), tile.type);
+                    solids[i] = isSolid(getMap(), tile.type);
                 }
                 solid_map = true;
             }

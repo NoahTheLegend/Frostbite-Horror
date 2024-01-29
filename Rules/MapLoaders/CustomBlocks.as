@@ -217,15 +217,10 @@ bool isSolid(u32 type)
 	return isSolid(getMap(), type);
 }
 
-bool isSolid(CMap@ map, u32 type)
+bool isSolid(CMap@ map, u32 type) // thin ice is not solid
 {
 	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedStone(type) || isTileCaution(type)
-		|| isTileSnow(type) || isTileIce(type) || isTileThickIce(type) || isTileElderBrick(type) || isTileSnowBricks(type);
-}
-
-bool isSolidNotIce(CMap@ map, u32 type) // thick ice is still solid!
-{
-	return !isTileIce(type) && isSolid(map, type);
+		|| isTileSnow(type) || isTileThickIce(type) || isTileElderBrick(type) || isTileSnowBricks(type);
 }
 
 bool isSolid(CMap@ map, Vec2f pos)
@@ -271,8 +266,6 @@ bool isTileThickIce(u32 index)
 
 bool isTileAnyIce(u32 index)
 {return isTileIce(index) || isTileThickIce(index);}
-
-
 
 bool isTileBackGlass(u32 index)
 {return index >= CMap::tile_bglass_d0 && index <= CMap::tile_bglass_v14;}

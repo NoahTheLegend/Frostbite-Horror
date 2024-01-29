@@ -785,6 +785,8 @@ bool canVault(CBlob@ blob, CMap@ map, f32 movingside)
 {
 	Vec2f pos = blob.getPosition();
 
+	// ice is not solid, do not climb it
+
 	f32 tilesize = map.tilesize;
 	if (!isSolid(map,Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight))) &&
 	        !isSolid(map,Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight + 1))) &&
