@@ -1,5 +1,8 @@
 // capped to framerate
 // staging may have issues
+//
+// TODO: MessageBox is using screen boundaries to remove text overflowing, should be rewritten
+// in a way to let the container slide over screen and be independent
 
 #include "Slider.as";
 #include "ClientVars.as";
@@ -13,6 +16,30 @@ bool was_press = false;
 u8 hud_transparency = 190;
 const u8 line_height = 12;
 
+// contains text and properties for default text runner
+class MessageText
+{
+    string text;
+    string title;
+    u8 title_offset;
+    SColor title_color; // todo
+
+    u16 max_length;
+    u8 delay;
+    bool playsound;
+
+    MessageText(string _text, string _title, u8 _title_offset, u16 _max_length, u8 _delay, bool _playsound)
+    {
+        text = _text;                 // full text
+        title = _title;               // constant title
+        title_offset = _title_offset; // gap between title and text
+        max_length = _max_length;     // max message length
+        delay = _delay;               // amount of ticks to wait for next symbom to write
+        playsound = _playsound;       // play bzzt sound
+    }
+};
+
+// wraps and splits text in lines for container, writes text char by char, manages title
 class Message
 {
     MessageText messageText;
@@ -39,7 +66,7 @@ class Message
         {
             string text = messageText.text;
 
-            string full = text_to_write = text.substr(0, text_to_write.size()+1); // add symbols instead of replacing whole part
+            string full = text_to_write = text.substr(0, text_to_write.size()+1);
             string char = full.substr(full.size()-1, 1);
             return char;
         }
@@ -58,28 +85,7 @@ class Message
     }
 };
 
-class MessageText
-{
-    string text;
-    string title;
-    u8 title_offset;
-    SColor title_color; // todo
-
-    u16 max_length;
-    u8 delay;
-    bool playsound;
-
-    MessageText(string _text, string _title, u8 _title_offset, u16 _max_length, u8 _delay, bool _playsound)
-    {
-        text = _text;                 // full text
-        title = _title;               // constant title
-        title_offset = _title_offset; // gap between title and text
-        max_length = _max_length;     // max message length
-        delay = _delay;               // amount of ticks to wait for next symbom to write
-        playsound = _playsound;       // play bzzt sound
-    }
-};
-
+// handler
 class MessageBox
 {
     Vec2f dim;
@@ -102,6 +108,10 @@ class MessageBox
     Vec2f br;
 
     bool hidden;
+
+    string[] lines;
+    Vec2f[] offsets;
+    bool[] is_title;
 
     MessageBox(u8 _max_history_size, Vec2f _dim, Vec2f _padding, u8 _message_gap = 0)
     {
@@ -126,7 +136,7 @@ class MessageBox
         hidden = true;
     }
 
-    Message@[] order_list; // messages waiting to be writter
+    Message@[] order_list; // messages waiting to be written
     Message@[] history;    // buffer
 
     void addMessage(Message msg)
@@ -241,20 +251,15 @@ class MessageBox
                 u8 extra_delay = getPunctuationDelay(written);
                 wait_time = delay + extra_delay;
             }
-
             msg.fadeIn(20);
+
 
             u8 l_size = msg.text_lines.size();
             string l_text = l_size == 0 ? msg.text_to_write : msg.text_to_write.substr(getLineIndex(msg)-1);
             
             // get rid of spaces in beginning of lines
-            u8 spaces = 0;
-            for (u8 i = 0; i < l_text.size(); i++)
-            {
-                if (l_text.substr(i, 1) == " ") spaces++;
-                else break;
-            }
-            l_text = l_text.substr(spaces);
+            l_text = ignoreEmpty(l_text);
+
 
             // processed line (text filler) dimensions
             Vec2f l_dim;
@@ -301,17 +306,28 @@ class MessageBox
             // separate lines once it passes edge
             if (l_dim.x > wrap_edge || endline)
             {
-                wrapText(msg, l_text, index, endline);
+                wrapText(msg, l_text, index, endline, 12);
             }
         }
     }
 
-    // wraps text line at position, specify if line is last and is message ending line
-    void wrapText(Message@ msg, string l_text, u16 index, bool message_end)
+    string ignoreEmpty(string text)
     {
-        for (u16 i = 1; i <= 12; i++)
+        u8 spaces = 0;
+        for (u8 i = 0; i < text.size(); i++)
         {
-            if (i < 12)
+            if (text.substr(i, 1) == " ") spaces++;
+            else break;
+        }
+        return text.substr(spaces);
+    }
+
+    // wraps text line at position when close to screen border, specify if line is last and is message ending line
+    void wrapText(Message@ msg, string l_text, u16 index, bool message_end, u8 max_offset = 12)
+    {
+        for (u16 i = 1; i <= max_offset; i++)
+        {
+            if (i < max_offset)
             {
                 u16 check_index = index-i;
                 string wrap_line = l_text.substr(check_index, 1);
@@ -330,15 +346,16 @@ class MessageBox
     }
 
     // shatters messages from history into lines and assigns them positions relatively
+    // TODO: should be implemented in another way to not run when idle
     u16 handleHistory()
     {
         f32 scroll = slider.scrolled;
         u16 lines_outbound = 0;
         f32 total_offset = 0;
 
-        string[] lines;
-        Vec2f[] offsets;
-        bool[] is_title;
+        lines = array<string>();
+        offsets = array<Vec2f>();
+        is_title = array<bool>();
 
         for (u8 i = 0; i < history.size(); i++)
         {
@@ -385,7 +402,7 @@ class MessageBox
         return lines.size();
     }
 
-    // draws history messages by lines
+    // draws history
     void drawHistory(string[] lines, Vec2f[] offsets, bool[] is_title, u16 lines_outbound, f32 scroll)
     {
         lines_scrolled = lines_outbound - Maths::Round(lines_outbound*scroll);
@@ -405,13 +422,14 @@ class MessageBox
         //GUI::DrawText("out: "+lines_outbound+"\nscrolled: "+scroll+"\nlines scrolled: "+lines_scrolled+"\noffset: "+scroll_offset, tl - Vec2f(170, -20), color_black);
     }
 
-    // writes a message symbol by symbol
+    // start message's text runner
     string writeMessage(Message@ msg)
     {
         if (msg.messageText.playsound)
         {
             Sound::Play("text_write.ogg", getDriver().getWorldPosFromScreenPos(getDriver().getScreenCenterPos()), vars.msg_volume_final, vars.msg_pitch_final+XORRandom(11)*0.01f);
         }
+
         if (msg.ended())
         {
             if (history.size() > max_history_size)
@@ -425,13 +443,13 @@ class MessageBox
         return msg.write();
     }
 
-    // returns the index of last line
+    // returns the index of last line if line is not specified
     int getLineIndex(Message@ msg)
     {
         return getLineIndex(msg, msg.text_lines.size());
     }
 
-    // returns index in whole text where the line starts from
+    // returns the index of line in text to show
     int getLineIndex(Message@ msg, u8 line)
     {
         int index = 0;
