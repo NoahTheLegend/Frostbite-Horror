@@ -230,10 +230,14 @@ class MessageBox
         hovering ? GUI::DrawPane(htl, hbr) : GUI::DrawSunkenPane(htl, hbr);
     }
 
-    // process and draw recent message
+    // process and draw last message
     void handleOrder()
     {
         // runs until message is completed, then decrements .size()
+        // TODO: can be optimized, cache some params in class?
+        // in example predefined line dimensions and lines to fill
+        // keep only rendering and timer here if possible,
+        // and move processing into separated method
         if (order_list.size() > 0) 
         {
             Message@ msg = order_list[0];
@@ -253,6 +257,7 @@ class MessageBox
             }
             msg.fadeIn(20);
 
+            // fill text from line to line 
             u8 l_size = msg.text_lines.size();
             string l_text = l_size == 0 ? msg.text_to_write : msg.text_to_write.substr(getLineIndex(msg)-1);
             
@@ -274,15 +279,16 @@ class MessageBox
             msg.old_pos = msg_pos+Vec2f(0, text_dim.y);
         
             u16 index = msg.text_to_write.size();
-            // draw filling line
-            if (lines_scrolled == 0)
+            if (lines_scrolled == 0) // ignore, last line isnt rendering if false
             {
                 SColor copy_color_white = color_white;
                 bool has_title_alpha = false;
+
                 for (u8 i = 0; i < l_size+1; i++)
                 {
                     string newtext;
                     Vec2f l_pos = msg_pos-Vec2f(0, line_height*(i+1));
+
                     if (i == l_size) // reserved for title
                     {
                         GUI::SetFont("CascadiaCodePL-Bold_13");
@@ -295,9 +301,11 @@ class MessageBox
                         newtext = msg.text_lines[l_size-(i+1)];
                     }
                     
+                    // draw title
                     GUI::DrawText(newtext, l_pos, copy_color_white);
                 }
-                
+
+                // draw filling line
                 GUI::SetFont("CascadiaCodePL_12");
                 GUI::DrawText(l_text, msg_pos, color_white);
             }
