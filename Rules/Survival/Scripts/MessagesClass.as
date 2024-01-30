@@ -233,7 +233,7 @@ class MessageBox
     // process and draw recent message
     void handleOrder()
     {
-        // runs once, then decrements .size()
+        // runs until message is completed, then decrements .size()
         if (order_list.size() > 0) 
         {
             Message@ msg = order_list[0];
@@ -253,13 +253,11 @@ class MessageBox
             }
             msg.fadeIn(20);
 
-
             u8 l_size = msg.text_lines.size();
             string l_text = l_size == 0 ? msg.text_to_write : msg.text_to_write.substr(getLineIndex(msg)-1);
             
             // get rid of spaces in beginning of lines
             l_text = ignoreEmpty(l_text);
-
 
             // processed line (text filler) dimensions
             Vec2f l_dim;
