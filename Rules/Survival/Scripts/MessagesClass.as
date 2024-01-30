@@ -259,22 +259,22 @@ class MessageBox
             // get rid of spaces in beginning of lines
             l_text = ignoreEmpty(l_text);
 
-            // processed line (text filler) dimensions
+            // complete line dimensions
             Vec2f l_dim;
             GUI::GetTextDimensions(l_text, l_dim);
             
-            // reference for processing line dimensions
+            // current text dimensions
             Vec2f text_dim;
             GUI::GetTextDimensions(msg.text_to_write, text_dim);
 
-            // apply height, including margin as message_gap
+            // apply TOTAL height of the message (and offset from previous message)
             msg.height = (text_dim.y*(l_size+1))+message_gap;
 
             Vec2f msg_pos = br - Vec2f(dim.x, text_dim.y) + Vec2f(padding.x, -padding.y);
             msg.old_pos = msg_pos+Vec2f(0, text_dim.y);
         
             u16 index = msg.text_to_write.size();
-            // draw filler message
+            // draw filling line
             if (lines_scrolled == 0)
             {
                 SColor copy_color_white = color_white;
@@ -297,6 +297,7 @@ class MessageBox
                     
                     GUI::DrawText(newtext, l_pos, copy_color_white);
                 }
+                
                 GUI::SetFont("CascadiaCodePL_12");
                 GUI::DrawText(l_text, msg_pos, color_white);
             }
