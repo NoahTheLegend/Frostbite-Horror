@@ -44,6 +44,21 @@ class ConfigMenu {
             && mpos.y >= etl.y && mpos.y <= ebr.y;
     }
 
+    bool isOpening()
+    {
+        return state == 1;
+    }
+
+    bool isClosing()
+    {
+        return state == 3;
+    }
+
+    bool isResizing()
+    {
+        return isOpening() || isClosing();
+    }
+
     void render()
     {
         CControls@ controls = getControls();
@@ -64,10 +79,9 @@ class ConfigMenu {
             global_alpha = 0;
         }
 
-        if (state == 1 || state == 3) // 1 opening, 3 closing
+        if (isResizing())
         {
-            // todo: open anim
-            if (state == 1)
+            if (isOpening())
             {
                 target_dim.x = Maths::Lerp(target_dim.x, dim.x, 0.35f);
                 if (target_dim.x >= dim.x-1)

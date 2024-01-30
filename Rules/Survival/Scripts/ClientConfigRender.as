@@ -10,20 +10,21 @@ u16 savetime = 0;
 
 void onInit(CRules@ this)
 {
-    if (isClient())
-	{
-        // init
-        ClientVars setvars();
-	    this.set("ClientVars", @setvars);
+    // init
+    ClientVars setvars();
+	this.set("ClientVars", @setvars);
 
-		ClientVars@ vars;
-        if (this.get("ClientVars", @vars))
-        {
-            LoadConfig(this, vars);
-            updateRulesProps(this);
-        }
-
+    ClientVars@ vars;
+    if (this.get("ClientVars", @vars))
+    {
+        LoadConfig(this, vars);
         SetupUI(this);
+
+        ConfigMenu@ menu;
+        if (this.get("ConfigMenu", @menu))
+        {
+            WriteConfig(this, menu);
+        }
     }
 }
 
@@ -31,22 +32,6 @@ void onRestart(CRules@ this)
 {
     if (isServer() && getLocalPlayer() !is null) // localhost fix
         onInit(this);
-
-    updateRulesProps(this);
-}
-
-void updateRulesProps(CRules@ this)
-{
-    
-}
-
-// hack
-void onSetPlayer(CRules@ this, CBlob@ blob, CPlayer@ player)
-{
-    if (player !is null && player.isMyPlayer())
-    {
-        updateRulesProps(this);
-    }
 }
 
 void LoadConfig(CRules@ this, ClientVars@ vars) // load cfg from cache
@@ -109,8 +94,6 @@ void SetupUI(CRules@ this) // add options here
 
 void WriteConfig(CRules@ this, ConfigMenu@ menu) // save config
 {
-    this.Untag("update_clientvars");
-
     if (menu is null)
     {
         error("Could not save vars, menu is null");
@@ -118,7 +101,7 @@ void WriteConfig(CRules@ this, ConfigMenu@ menu) // save config
     }
 
     ClientVars@ vars;
-    if (getRules().get("ClientVars", @vars))
+    if (this.get("ClientVars", @vars))
     {
         //camera
         //====================================================
@@ -138,7 +121,7 @@ void WriteConfig(CRules@ this, ConfigMenu@ menu) // save config
                 vars.msg_pitch          = pitch.slider.scrolled * max_pitch;
                 vars.msg_pitch_final    = min_pitch + pitch.slider.scrolled * (max_pitch-min_pitch);
             }
-        
+
             //====================================================
             ConfigFile cfg = ConfigFile();
 	        if (cfg.loadFile("../Cache/FB/clientconfig.cfg"))
@@ -168,41 +151,45 @@ void WriteConfig(CRules@ this, ConfigMenu@ menu) // save config
         }
         else error("Could not load config to save vars code 2");
     }
+
+    this.Untag("update_clientvars");
 }
 
 void onRender(CRules@ this) // renderer for class, saves config if class throws update tag
 {
-    if (isClient())
-    {
-        bool need_update = this.hasTag("update_clientvars");
+    bool need_update = this.hasTag("update_clientvars");
         
-        ConfigMenu@ menu;
-        if (this.get("ConfigMenu", @menu))
+    ConfigMenu@ menu;
+    if (this.get("ConfigMenu", @menu))
+    {
+        menu.render();
+
+        GUI::SetFont("menu");
+        if (savetime > 0)
         {
-            menu.render();
-
-            GUI::SetFont("menu");
-            if (savetime > 0)
-            {
-                GUI::DrawText("Saved!", menu.pos+Vec2f(menu.target_dim.x + 6, 7),
-                    SColor(185 * Maths::Min(1.0f, f32(savetime)/savetime_fadeout), 25, 255, 50));
-                savetime--;
-            }
-
-            if (need_update)
-            {
-                WriteConfig(this, menu);
-            }
+            GUI::DrawText("Saved!", menu.pos+Vec2f(menu.target_dim.x + 6, 7),
+                SColor(185 * Maths::Min(1.0f, f32(savetime)/savetime_fadeout), 25, 255, 50));
+            savetime--;
         }
+    }
+}
 
-        // put common stuff to update here, otherwise keep in relative scripts
+void onTick(CRules@ this)
+{
+    bool need_update = this.hasTag("update_clientvars");
+    
+    ConfigMenu@ menu;
+    if (this.get("ConfigMenu", @menu))
+    {
         if (need_update)
         {
-		    ClientVars@ vars;
-    	    if (this.get("ClientVars", @vars))
-    	    {
-                updateRulesProps(this);
-    	    }
+            ClientVars@ vars;
+            if (this.get("ClientVars", @vars))
+            {
+                LoadConfig(this, vars);
+            }
+
+            WriteConfig(this, menu);
         }
     }
 }

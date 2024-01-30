@@ -141,6 +141,7 @@ class Slider
 
     void setScroll(f32 dist)
     {
+        scrolled = dist;
         button_pos = pos + (dim-button_dim)*dist;
     }
 
