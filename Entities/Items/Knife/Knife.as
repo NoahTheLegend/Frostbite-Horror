@@ -21,6 +21,7 @@ void onInit(CBlob@ this)
 	this.set_u8("hitter", Hitters::sword);
 	this.Tag("hit_only_flesh");
 	this.set_u8("attack_types_amount", 2);
+	this.set_string("swing_sound", "/swing");
 
 	this.set_f32("rotation_mod", 5);
 	this.Tag("sharp");

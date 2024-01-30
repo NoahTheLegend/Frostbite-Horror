@@ -21,7 +21,7 @@ void onInit(CBlob@ this)
 
 void onTick(CBlob@ this)
 {
-    if (this.isAttached())
+    if (this.isAttached() && this.isOnScreen())
 	{
 		AttachmentPoint@ point = this.getAttachments().getAttachmentPointByName("PICKUP");
 		CBlob@ holder = point.getOccupied();
@@ -43,6 +43,12 @@ void onTick(CBlob@ this)
 		{		
 			if (a1)
 			{
+				CSprite@ sprite = this.getSprite();
+				if (isClient() && this.exists("swing_sound") && sprite !is null)
+				{
+					sprite.PlayRandomSound(this.get_string("swing_sound"), 0.5f, 1.0f+XORRandom(21)*0.01f);
+				}
+
 				u8 team = holder.getTeamNum();
 				
 				HitInfo@[] hitInfos;
