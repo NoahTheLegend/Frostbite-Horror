@@ -72,21 +72,20 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
         bool init = params.read_bool();
         u16 plyid;
         if (!params.saferead_u16(plyid)) return;
+
         CPlayer@ local = getPlayerByNetworkId(plyid);
-        if (local is null) return;
-
-        if (!init && isServer())
+        if (!init && isServer() && local !is null)
         {
-            CBitStream params1;
-            params1.write_bool(true);
-            params1.write_u16(plyid);
+            CBitStream nextparams;
+            nextparams.write_bool(true);
+            nextparams.write_u16(plyid);
 
-            params1.write_string(this.getInventoryName());
-            params1.write_u8(this.get_u8("type"));
-            params1.write_bool(this.hasTag("canned_food"));
-            params1.write_bool(false);
+            nextparams.write_string(this.getInventoryName());
+            nextparams.write_u8(this.get_u8("type"));
+            nextparams.write_bool(this.hasTag("canned_food"));
+            nextparams.write_bool(false);
 
-            this.server_SendCommandToPlayer(this.getCommandID("sync"), params1, local);
+            this.server_SendCommandToPlayer(this.getCommandID("sync"), nextparams, local);
         }
         else if (init && isClient())
         {

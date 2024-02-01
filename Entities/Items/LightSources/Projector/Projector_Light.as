@@ -18,6 +18,7 @@ void onInit(CBlob@ this)
 		CBitStream params;
 		params.write_bool(true);
 		params.write_u16(0);
+		params.write_u16(getLocalPlayer().getNetworkID());
 		this.SendCommand(this.getCommandID("sync"), params);
 	}
 }
@@ -43,14 +44,19 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 	{
 		bool init;
 		if (!params.saferead_bool(init)) return;
+		
 		if (init && isServer())
 		{
 			u16 id = params.read_u16();
+			u16 ply_id = params.read_u16();
+
+			CPlayer@ ply = getPlayerByNetworkId(ply_id);
+			if (ply is null) return;
 
 			CBitStream nextparams;
 			nextparams.write_bool(false);
 			nextparams.write_u16(this.get_u16("remote_id"));
-			this.SendCommand(this.getCommandID("sync"), nextparams);
+			this.server_SendCommandToPlayer(this.getCommandID("sync"), nextparams, ply);
 		}
 		if (!init && isClient())
 		{

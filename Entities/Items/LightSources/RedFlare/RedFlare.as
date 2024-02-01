@@ -13,6 +13,7 @@ void onInit(CBlob@ this)
 	{
 		CBitStream params;
 		params.write_bool(false);
+		params.write_u16(getLocalPlayer().getNetworkID());
 		this.SendCommand(this.getCommandID("sync"), params);
 	}
 
@@ -90,14 +91,18 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 	else if (cmd == this.getCommandID("sync"))
 	{
 		bool truesync = params.read_bool();
+		u16 ply_id = params.read_u16();
 		
-		if (!truesync && isServer()) // init
+		CPlayer@ ply = getPlayerByNetworkId(ply_id);
+		if (!truesync && isServer() && ply !is null) // init
 		{
 			if (this.hasTag("activated"))
 			{
-				CBitStream params1;
-				params1.write_bool(true);
-				params1.write_s32(this.get_s32("timer"));
+				CBitStream nextparams;
+				nextparams.write_bool(true);
+				nextparams.write_u16(ply_id);
+				nextparams.write_s32(this.get_s32("timer"));
+				this.server_SendCommandToPlayer(this.getCommandID("sync"), nextparams, ply);
 			}
 		}
 		if (truesync && isClient())
