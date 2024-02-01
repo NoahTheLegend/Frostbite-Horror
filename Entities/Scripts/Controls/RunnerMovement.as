@@ -42,6 +42,7 @@ void onTick(CMovement@ this)
 	CMap@ map = blob.getMap();
 	Vec2f vel = blob.getVelocity();
 	Vec2f pos = blob.getPosition();
+	f32 rad = blob.getRadius();
 	CShape@ shape = blob.getShape();
 
 	const f32 vellen = shape.vellen;
@@ -457,9 +458,13 @@ void onTick(CMovement@ this)
 			    Maths::Abs(groundNormal.y) <= 0.01f) //sliding on wall
 			{
 				Vec2f force;
+				
+				TileType tile_left  = map.getTile(Vec2f(pos.x-rad-4, pos.y)).type;
+				TileType tile_right = map.getTile(Vec2f(pos.x+rad+4, pos.y)).type;
 
 				Vec2f vel = blob.getVelocity();
-				if (vel.y >= slidespeed && (blob.isFacingLeft() ? groundNormal.x > 0 : groundNormal.x < 0))
+				if (vel.y >= slidespeed && (blob.isFacingLeft()
+					? groundNormal.x > 0 && !isTileAnyIce(tile_left) : groundNormal.x < 0 && !isTileAnyIce(tile_right)))
 				{
 					f32 temp = vel.y * 0.9f;
 					Vec2f new_vel(vel.x * 0.9f, temp < slidespeed ? slidespeed : temp);
