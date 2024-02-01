@@ -1,5 +1,5 @@
 
-class FoodStats {
+class FoodStats { // make shared later
     string name;    // inventory name
     s16 hunger;     // directly changes hunger and heat generation
     s16 saturation; // changes hunger loss
@@ -22,6 +22,11 @@ class FoodStats {
         raw = _raw;
         quality = _quality;
         spoiled = _spoiled;
+    }
+
+    string getQualitySuffix()
+    {
+        return quality < 50 ? "(dangerously raw)" : quality < 100 ? "(raw)" : quality > 200 ? "(spoiled)" : "";
     }
 }
 
@@ -48,7 +53,7 @@ FoodStats getFoodStats(string name, u8 frame)
                 {invname = "Tuna";                  hunger = 350; saturation = 200; thirst = 0;    flavour = 100; break;}
             case 3: // peas
                 {invname = "Peas";                  hunger = 250; saturation = 50;  thirst = -50;  flavour = 0; break;}
-            case 4: // Stew
+            case 4: // stew
                 {invname = "Stew";                  hunger = 650; saturation = 500; thirst = -200; flavour = 200; break;}
             case 5: // pineapple
                 {invname = "Canned pineapple";      hunger = 100; saturation = -50; thirst = 100;  flavour = 250; break;}
@@ -81,12 +86,20 @@ FoodStats getFoodStats(string name, u8 frame)
     hunger *= spoiled_factor;
     saturation *= spoiled_factor;
     thirst *= spoiled_factor;
-    flavour *= spoiled_factor;*/
+    flavour *= spoiled_factor;
+*/
 
-void setName(CBlob@ this, FoodStats@ stats)
+void initFoodStats(CBlob@ this)
+{
+    FoodStats stats = getFoodStats(this.getName(), this.get_u8("type"));
+    this.set("FoodStats", stats);
+    setFoodName(this, @stats);
+}
+
+void setFoodName(CBlob@ this, FoodStats@ stats)
 {
     if (stats is null) return;
-    this.setInventoryName(stats.name + (stats.quality < 50 ? "(dangerously raw)" : stats.quality < 100 ? "(raw)" : stats.quality > 200 ? "(spoiled)" : ""));
+    this.setInventoryName(stats.name + stats.getQualitySuffix());
 }
 
 void emptyCanned(CBlob@ this, CBlob@ caller, u16 callerid)

@@ -14,16 +14,11 @@ void onInit(CBlob@ this)
     this.addCommandID("eat25");
 
     this.addCommandID("sync");
-
 	this.Tag("pushedByDoor");
 
     // not spritesheet! Only animation frames (i.e. 0 and 8)
     if (!this.exists("type")) this.set_u8("type", 0);
     if (!this.exists("invframe")) this.set_u8("invframe", this.inventoryIconFrame);
-
-    FoodStats stats = getFoodStats(this.getName(), this.get_u8("type"));
-    this.set("FoodStats", stats);
-    setName(this, @stats);
 
     CSprite@ sprite = this.getSprite();
     if (sprite is null) return;
@@ -34,7 +29,8 @@ void onInit(CBlob@ this)
     AddIconToken("$icon_eat25$", "FoodIcons.png", Vec2f(16, 16), 2);
     AddIconToken("$icon_opencanned$", "FoodIcons.png", Vec2f(16, 16), 3);
 
-    defaultSync(this);
+    initFoodStats(this);
+    if (isClient()) defaultSync(this);
 }
 
 void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint@ ap)
@@ -51,7 +47,7 @@ void defaultSync(CBlob@ this)
     {
         CBitStream params;
         params.write_bool(false);
-        params.write_u16(getLocalPlayer().getNetworkID()); // might be null prob pls test
+        params.write_u16(getLocalPlayer().getNetworkID()); // might be null pls test
         this.SendCommand(this.getCommandID("sync"), params);
     }
 }
@@ -100,13 +96,19 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
             if (!params.saferead_u8(frame)) return;
             bool is_canned;
             if (!params.saferead_bool(is_canned)) return;
+
+            if (!this.hasTag("foodstats_synced"))
+            {
+                this.Tag("foodstats_synced");
+                initFoodStats(this);
+            }
            
             if (this.hasTag("canned_food") && !is_canned)
                 this.Untag("canned_food");
 
             bool trash = params.read_bool(); // consumed
             if (trash)
-                this.Tag("trash");
+                this.Tag("trash"); 
 
             this.setInventoryName(name);
             this.set_u8("type", frame);
