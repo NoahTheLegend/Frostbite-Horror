@@ -17,6 +17,12 @@ void onInit(CBlob@ this)
 
 	if (isClient())
 	{
+		CSprite@ sprite = this.getSprite();
+		if (sprite !is null)
+		{
+			sprite.ScaleBy(Vec2f(0.75f, 0.75f));
+		}
+
 		CBitStream params;
 		params.write_bool(true);
 		params.write_u16(getLocalPlayer().getNetworkID());
