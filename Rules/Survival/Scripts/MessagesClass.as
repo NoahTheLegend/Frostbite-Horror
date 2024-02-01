@@ -113,6 +113,9 @@ class MessageBox
     Vec2f[] offsets;
     bool[] is_title;
 
+    u8 msg_count_slidetime;
+    u8 msg_count_slidetime_current;
+
     MessageBox(u8 _max_history_size, Vec2f _dim, Vec2f _padding, u8 _message_gap = 0)
     {
         dim = _dim;
@@ -130,10 +133,12 @@ class MessageBox
         
         hidebar_tl = Vec2f(tl.x, br.y-10);
         hidebar_br = Vec2f(br.x, br.y+5);
-        wrap_edge = dim.x-padding.x*2;
+        wrap_edge = dim.x-padding.x*4;
         lines_scrolled = 0;
 
         hidden = true;
+        msg_count_slidetime = 10; // should not be 0
+        msg_count_slidetime_current = 0; 
     }
 
     Message@[] order_list; // messages waiting to be written
@@ -183,6 +188,33 @@ class MessageBox
         {
             slider.scrollBy(was_scroll == 1 ? Maths::Min(-1, -25+history_size/4) : Maths::Max(1, 25-history_size/4));
         }
+
+        drawOrderCount();
+    }
+
+    void drawOrderCount()
+    {
+        u16 order_list_size = order_list.size();
+        string count_text = "";
+
+        if (order_list_size == 0)
+        {
+            count_text = "✓";
+            if (msg_count_slidetime_current > 0) msg_count_slidetime_current--;
+        }
+        else
+        {
+            count_text = order_list_size+"!";
+            if (msg_count_slidetime_current < msg_count_slidetime) msg_count_slidetime_current++;
+        }
+
+        f32 p = 32;
+        Vec2f otl = br - Vec2f(p+6, dim.y + p * (1.0f-(f32(msg_count_slidetime_current)/f32(msg_count_slidetime))));
+        Vec2f obr = otl + Vec2f(p, p);
+
+        GUI::SetFont("RockwellMT_18");
+        GUI::DrawSunkenPane(otl, obr);
+        GUI::DrawTextCentered(count_text, otl + Vec2f(p/2-2, p/2), SColor(255, 255, 255, 0));
     }
 
     void handleHideBar()
