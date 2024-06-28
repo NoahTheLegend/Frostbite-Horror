@@ -54,6 +54,7 @@ void defaultSync(CBlob@ this)
 
 void GetButtonsFor(CBlob@ this, CBlob@ caller)
 {
+    return; // all other code is legacy
     if (this.hasTag("trash")) return;
 
 	AttachmentPoint@ ap = this.getAttachments().getAttachmentPointByName("PICKUP");
