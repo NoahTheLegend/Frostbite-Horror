@@ -1,5 +1,10 @@
 #include "ShadowCastHooks.as"
 
+void onInit(CBlob@ this)
+{
+	this.Tag("opaque");
+}
+
 // todo: should work with more than 8x8 blobs
 void onTick(CBlob@ this)
 {
