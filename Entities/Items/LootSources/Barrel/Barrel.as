@@ -72,12 +72,12 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream@ params)
 		CPlayer@ ply = getPlayerByNetworkId(ply_id);
 		if (init && isServer() && ply !is null)
 		{
-			CBitStream params;
-			params.write_bool(false);
-			params.write_u16(ply_id);
-			params.write_u8(this.get_u8("anim"));
-			params.write_u8(this.get_u8("frame")); // amount of frames here, since its serverside you gotta do it manually
-			this.server_SendCommandToPlayer(this.getCommandID("sync"), params, ply);
+			CBitStream params1;
+			params1.write_bool(false);
+			params1.write_u16(ply_id);
+			params1.write_u8(this.get_u8("anim"));
+			params1.write_u8(this.get_u8("frame")); // amount of frames here, since its serverside you gotta do it manually
+			this.server_SendCommandToPlayer(this.getCommandID("sync"), params1, ply);
 
 			return;
 		}
