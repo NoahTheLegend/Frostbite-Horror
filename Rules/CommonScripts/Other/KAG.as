@@ -97,5 +97,5 @@ void onExitChat(CRules @this)
 {
 	CBlob@ localblob = getLocalPlayerBlob();
 	if (localblob !is null)
-		set_emoteByCommand(localblob, "");
+		set_emote(localblob, "off");
 }
