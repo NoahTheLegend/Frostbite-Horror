@@ -11,6 +11,7 @@ class Slider
     Vec2f step; // snap step in both axis
     u8 mode;
     string description;
+    string[] descriptions;
 
     bool captured;
     f32 scrolled;
@@ -28,7 +29,7 @@ class Slider
         start_pos = _start_pos;
         snap_points = _snap_points;
         step = Vec2f(0,0);
-        mode = 0; // 0 - shows %, 1 - shows snapped point
+        mode = 0; // 0 - shows %, 1 - shows snapped point, 2 - shows descriptions[]
         description = "";
 
         captured = false;
@@ -51,6 +52,7 @@ class Slider
         CControls@ controls = getControls();
         if (controls is null) return;
 
+        GUI::SetFont("score-smaller");
         u8 style = 0;
 
         Vec2f mpos = controls.getInterpMouseScreenPos();
@@ -81,10 +83,9 @@ class Slider
 
         scrolled = Maths::Round((tl-button_pos).Length()/(dim.x > dim.y ? aligned_dim.x : aligned_dim.y)*100.0f)/100.0f;
         // track
-        if (alpha == 255) GUI::DrawFramedPane(tl, br);
-        else GUI::DrawPane(tl, br, SColor(alpha,255,255,255));
+        GUI::DrawFramedPane(tl, br);
         // button
-        style == 0 || alpha != 255 ? GUI::DrawPane(drawpos, drawpos+button_dim, SColor(alpha,255,255,255)) : GUI::DrawSunkenPane(drawpos, drawpos+button_dim);
+        GUI::DrawSunkenPane(drawpos, drawpos+button_dim);
     }
 
     void requestUpdate(Vec2f a, Vec2f b)
@@ -92,7 +93,7 @@ class Slider
         if (a != b) getRules().Tag("update_clientvars");
     }
 
-    u16 getPage()
+    u16 getSnapPoint()
     {
         if (snap_points > 0) return scrolled*snap_points;
         return scrolled;
