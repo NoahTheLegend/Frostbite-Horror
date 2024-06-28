@@ -112,7 +112,7 @@ void DrawTemperature(CSprite@ this, CBlob@ blob, CRules@ rules, CControls@ contr
     // indicators
     GUI::DrawPane(t_drawpos-Vec2f(10,10), t_drawpos+Vec2f(24,85)*2+Vec2f(10,10), SColor(hud_transparency,255,255,255)); // background
     GUI::DrawIcon("Thermometer.png", 2, Vec2f(24, 85*(1.0f-gauge_shift)), t_drawpos + Vec2f(0, gauge_offset+85*gauge_shift), 1.0f, 0.55f, color_global); // global temperature
-    GUI::DrawIcon("Thermometer.png", 1, Vec2f(24, 85), t_drawpos, 1.0f, 1.0f, color_body); // body temperature
+    GUI::DrawIcon("Thermometer.png", 1, Vec2f(24, 85), t_drawpos, 1.0f, 1.0f, color_global); // body temperature
     GUI::DrawIcon("Thermometer.png", 0, Vec2f(24, 85), t_drawpos, 1.0f); // icon
     
     // arrows
