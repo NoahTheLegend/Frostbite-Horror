@@ -3,7 +3,6 @@
 
 #include "StandardControlsCommon.as"
 #include "ThrowCommon.as"
-#include "WheelMenuCommon.as"
 #include "KnockedCommon.as"
 #include "CustomBlocks.as";
 
@@ -22,57 +21,6 @@ void onInit(CBlob@ this)
 	this.getCurrentScript().removeIfTag = "dead";
 
 	AddIconToken("$filled_bucket$", "Bucket.png", Vec2f(16, 16), 1);
-
-	// setup pickup menu wheel
-	WheelMenu@ menu = get_wheel_menu("pickup");
-	if (menu.entries.length == 0)
-	{
-		menu.option_notice = "Pickup";
-
-		// knight stuff
-		menu.add_entry(PickupWheelMenuEntry("Keg", "$keg$", "keg"));
-
-		const PickupWheelOption[] bomb_options = {PickupWheelOption("bomb", 1), PickupWheelOption("mat_bombs", 0)};
-		menu.add_entry(PickupWheelMenuEntry("Bomb", "$mat_bombs$", bomb_options, Vec2f(0, -8.0f)));
-
-		const PickupWheelOption[] waterbomb_options = {PickupWheelOption("waterbomb", 1), PickupWheelOption("mat_waterbombs", 0)};
-		menu.add_entry(PickupWheelMenuEntry("Water Bomb", "$mat_waterbombs$", waterbomb_options, Vec2f(0, -6.0f)));
-
-		menu.add_entry(PickupWheelMenuEntry("Mine", "$mine$", "mine"));
-
-		// archer stuff
-		menu.add_entry(PickupWheelMenuEntry("Arrows", "$mat_arrows$", "mat_arrows", Vec2f(0, -8.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Water Arrows", "$mat_waterarrows$", "mat_waterarrows", Vec2f(0, 2.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Fire Arrows", "$mat_firearrows$", "mat_firearrows", Vec2f(0, -6.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Bomb Arrows", "$mat_bombarrows$", "mat_bombarrows"));
-
-		// builder stuff
-		menu.add_entry(PickupWheelMenuEntry("Gold", "$mat_gold$", "mat_gold", Vec2f(0, -6.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Stone", "$mat_stone$", "mat_stone", Vec2f(0, -6.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Wood", "$mat_wood$", "mat_wood", Vec2f(0, -6.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Drill", "$drill$", "drill", Vec2f(-16.0f, 0.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Saw", "$saw$", "saw", Vec2f(-16.0f, -16.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Trampoline", "$trampoline$", "trampoline", Vec2f(-16.0f, -8.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Boulder", "$boulder$", "boulder"));
-		menu.add_entry(PickupWheelMenuEntry("Sponge", "$sponge$", "sponge", Vec2f(0, 8.0f)));
-		menu.add_entry(PickupWheelMenuEntry("Seed", "$seed$", "seed", Vec2f(8.0f, 8.0f)));
-
-		// misc
-		menu.add_entry(PickupWheelMenuEntry("Log", "$log$", "log"));
-		const PickupWheelOption[] food_options = {
-			PickupWheelOption("food"),
-			PickupWheelOption("heart"),
-			PickupWheelOption("fishy"),
-			PickupWheelOption("grain"),
-			PickupWheelOption("steak"),
-			PickupWheelOption("egg")
-		};
-		menu.add_entry(PickupWheelMenuEntry("Food", "$food$", food_options));
-		menu.add_entry(PickupWheelMenuEntry("Ballista Ammo", "$mat_bolts$", "mat_bolts"));
-		menu.add_entry(PickupWheelMenuEntry("Crate", "$crate$", "crate", Vec2f(-16.0f, 0)));
-		menu.add_entry(PickupWheelMenuEntry("Bucket", "$filled_bucket$", "bucket"));
-	}
-
 }
 
 void onTick(CBlob@ this)
@@ -87,48 +35,7 @@ void onTick(CBlob@ this)
 	CControls@ controls = getControls();
 
 	// drop / pickup / throw
-	if (controls.ActionKeyPressed(AK_PICKUP_MODIFIER))
-	{
-		WheelMenu@ menu = get_wheel_menu("pickup");
-		if (this.isKeyPressed(key_pickup) && menu !is get_active_wheel_menu())
-		{
-			set_active_wheel_menu(@menu);
-		}
-		
-		GatherPickupBlobs(this);
-
-		CBlob@[]@ pickupBlobs;
-		this.get("pickup blobs", @pickupBlobs);
-
-		CBlob@[] available;
-		FillAvailable(this, available, pickupBlobs);
-
-		for (uint i = 0; i < menu.entries.length; i++)
-		{
-			PickupWheelMenuEntry@ entry = cast<PickupWheelMenuEntry>(menu.entries[i]);
-			if (entry is null) continue;
-			entry.disabled = true;
-
-			for (uint j = 0; j < available.length; j++)
-			{
-				string bname = available[j].getName();
-				for (uint k = 0; k < entry.options.length; k++)
-				{
-					if (entry.options[k].name == bname)
-					{
-						entry.disabled = false;
-						break;
-					}
-				}
-
-				if (!entry.disabled)
-				{
-					break;
-				}
-			}
-		}
-	}
-	else if (this.isKeyJustPressed(key_pickup))
+	if (this.isKeyJustPressed(key_pickup))
 	{
 		TapPickup(this);
 
@@ -166,66 +73,6 @@ void onTick(CBlob@ this)
 	}
 	else
 	{
-		WheelMenu@ menu = get_wheel_menu("pickup");
-		if ((this.isKeyJustReleased(key_pickup) || controls.isKeyJustReleased(controls.getActionKeyKey(AK_PICKUP_MODIFIER)))
-			&&  get_active_wheel_menu() is menu)
-		{
-			PickupWheelMenuEntry@ selected = cast<PickupWheelMenuEntry>(menu.get_selected());
-			set_active_wheel_menu(null);
-
-			if (selected !is null && !selected.disabled)
-			{
-				CBlob@[] blobsInRadius;
-				if (this.getMap().getBlobsInRadius(this.getPosition(), this.getRadius() + 50.0f, @blobsInRadius))
-				{
-					uint highestPriority = 0;
-					float closestScore = 600.0f;
-					CBlob@ closest;
-
-					for (uint i = 0; i < blobsInRadius.length; i++)
-					{
-						CBlob@ b = blobsInRadius[i];
-
-						string bname = b.getName();
-						for (uint j = 0; j < selected.options.length; j++)
-						{
-							PickupWheelOption@ selectedOption = @selected.options[j];
-							if (bname == selectedOption.name)
-							{
-								if (!canBlobBePickedUp(this, b))
-								{
-									break;
-								}
-
-								float maxDist = Maths::Max(this.getRadius() + b.getRadius() + 20.0f, 36.0f);
-								float dist = (this.getPosition() - b.getPosition()).Length();
-								float factor = dist / maxDist;
-
-								float score = getPriorityPickupScale(this, b, factor);
-
-								if (score < closestScore || selectedOption.priority > highestPriority)
-								{
-									highestPriority = selectedOption.priority;
-									closestScore = score;
-									@closest = @b;
-								}
-							}
-						}
-					}
-
-					if (closest !is null)
-					{
-						// NOTE: optimisation: use selected-option-blobs-in-radius
-						@closest = @GetBetterAlternativePickupBlobs(blobsInRadius, closest);
-						server_Pickup(this, this, closest);
-					}
-				}
-			}
-
-			return;
-
-		}
-
 		if (this.isKeyPressed(key_pickup))
 		{
 			GatherPickupBlobs(this);
