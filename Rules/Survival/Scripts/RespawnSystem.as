@@ -7,10 +7,10 @@
 //  can be designed to work without one of course.
 
 #include "PlayerInfo"
+const u8 team_researchers = 1;
 
 shared class RespawnSystem
 {
-
 	private RulesCore@ core;
 
 	RespawnSystem() { @core = null; }
@@ -30,9 +30,9 @@ shared class RespawnSystem
 
 		if (player !is null)
 		{
-			CBlob @newBlob = server_CreateBlob(p_info.blob_name, p_info.team, at);
+			CBlob @newBlob = server_CreateBlob(p_info.blob_name, team_researchers, at);
 			newBlob.server_SetPlayer(player);
-			player.server_setTeamNum(p_info.team);
+			player.server_setTeamNum(team_researchers);
 
 			if (p_info.customImmunityTime >= 0)
 			{
