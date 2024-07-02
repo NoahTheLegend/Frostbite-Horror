@@ -189,11 +189,10 @@ class Section {
         SColor col_white = SColor(alpha,255,255,255);
         SColor col_grey = SColor(alpha,235,235,235);
 
+        GUI::SetFont("RockwellMT_18");
+        
         GUI::DrawPane(tl, br, SColor(55,255,255,255));
-        {
-            GUI::SetFont("RockwellMT_18");
-            GUI::DrawText(title, pos + Vec2f(title_dim.x + padding.x/2, padding.y), col_white);
-        }
+        GUI::DrawText(title, pos + Vec2f(title_dim.x + padding.x/2, padding.y), col_white);
         GUI::DrawRectangle(tl+padding + Vec2f(0,28), Vec2f(br.x-padding.x, tl.y+padding.y + 30), col_grey);
         
         for (u8 i = 0; i < options.size(); i++)

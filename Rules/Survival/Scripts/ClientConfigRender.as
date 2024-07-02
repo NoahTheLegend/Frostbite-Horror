@@ -68,7 +68,7 @@ void SetupUI(CRules@ this) // add options here
     ClientVars@ vars = getVars();
     if (vars !is null)
     {
-        Vec2f section_pos = menu_pos;
+        Vec2f section_pos = menu_pos + Vec2f(30, 0);
         Section messages("Messages", section_pos, Vec2f(menu_dim.x/2, menu_pos.y + 150));
 
         // slider increases every build up from initializing, pls fix 
