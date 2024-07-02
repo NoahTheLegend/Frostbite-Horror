@@ -34,6 +34,7 @@ void onTick(CBlob@ this)
 	this.SetLightRadius(Maths::Min(max_light_radius, rad));
 
 	if (!isClient()) return;
+	if (!this.isOnScreen()) return;
 	if (getMap() is null) return;
 	getMap().UpdateLightingAtPosition(this.getOldPosition(), rad+4.0f);
 }
