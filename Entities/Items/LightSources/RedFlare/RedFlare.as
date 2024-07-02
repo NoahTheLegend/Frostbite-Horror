@@ -50,7 +50,6 @@ void onTick(CSprite@ this)
 
 void onTick(CBlob@ this)
 {
-	if (!isServer()) return;
 	if (!this.hasTag("activated") || this.hasTag("extinguished")) return;
 
 	s32 timer = this.get_s32("timer") - getGameTime();
