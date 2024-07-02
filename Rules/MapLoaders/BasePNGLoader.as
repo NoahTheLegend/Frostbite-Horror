@@ -110,8 +110,8 @@ class PNGLoader
 			switch (pixel.color | 0xFF000000)
 			{
 			// Alpha spawn and flag
-			case map_colors::alpha_spawn: autotile(offset); AddMarker(map, offset, (alpha & 0x01 == 0 ? "blue main spawn" : "red main spawn")); break;
-			case map_colors::alpha_flag:  autotile(offset); AddMarker(map, offset, (alpha & 0x01 == 0 ? "blue spawn"      : "red spawn"));      break;
+			case map_colors::alpha_spawn: autotile(offset); AddMarker(map, offset, "red main spawn"); break;
+			case map_colors::alpha_flag:  autotile(offset); AddMarker(map, offset, "red spawn");      break;
 
 			// Alpha various structures
 			case map_colors::alpha_stalagmite:      autotile(offset); spawnBlob(map, "stalagmite",                            255, position, getAngleFromChannel(alpha), true).set_u8("state", 1); /*stabbing*/ break;
