@@ -17,6 +17,8 @@ class ConfigMenu {
     Section[] sections;
 
     Vec2f target_dim;
+    bool was_lmb;
+    bool was_rmb;
 
     ConfigMenu(Vec2f _pos, Vec2f _dim)
     {
@@ -31,6 +33,8 @@ class ConfigMenu {
         state = 0;
 
         target_dim = Vec2f(32,32);
+        was_lmb = false;
+        was_rmb = false;
     }
 
     void addSection(Section@ section)
@@ -68,9 +72,14 @@ class ConfigMenu {
         Vec2f btn_dim = Vec2f(32,32);
         bool hovering = hover(mpos, tl, tl+btn_dim);
 
+        bool lmb = controls.isKeyPressed(KEY_LBUTTON);
+        bool rmb = controls.isKeyPressed(KEY_RBUTTON);
+
         if (state == 0)
         {
-            if (hovering && (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
+            if (hovering
+                && !(was_lmb || was_rmb)
+                && (lmb || rmb))
             {
                 state = 1;
             }
@@ -126,7 +135,9 @@ class ConfigMenu {
         {
             GUI::DrawPane(tl, br, SColor(155,255,255,255));
 
-            if (hovering && (controls.isKeyPressed(KEY_LBUTTON) || controls.isKeyPressed(KEY_RBUTTON)))
+            if (hovering
+                && !(was_lmb || was_rmb)
+                && (lmb || rmb))
                 state = 3;
 
             global_alpha = Maths::Min(255, global_alpha+25);
@@ -137,6 +148,9 @@ class ConfigMenu {
         }
 
         GUI::DrawIcon("SettingsMenuIcon.png", 0, btn_dim, tl, 0.5f, 0.5f, SColor(hovering?200:100,255,255,255));
+
+        was_lmb = lmb;
+        was_rmb = rmb;
     }
 };
 
@@ -175,11 +189,10 @@ class Section {
         SColor col_white = SColor(alpha,255,255,255);
         SColor col_grey = SColor(alpha,235,235,235);
 
+        GUI::SetFont("RockwellMT_18");
+        
         GUI::DrawPane(tl, br, SColor(55,255,255,255));
-        {
-            GUI::SetFont("RockwellMT_18");
-            GUI::DrawText(title, pos + Vec2f(title_dim.x + padding.x/2, padding.y), col_white);
-        }
+        GUI::DrawText(title, pos + Vec2f(title_dim.x + padding.x/2, padding.y), col_white);
         GUI::DrawRectangle(tl+padding + Vec2f(0,28), Vec2f(br.x-padding.x, tl.y+padding.y + 30), col_grey);
         
         for (u8 i = 0; i < options.size(); i++)

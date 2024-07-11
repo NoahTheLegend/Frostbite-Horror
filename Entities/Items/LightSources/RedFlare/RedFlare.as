@@ -1,6 +1,7 @@
 #include "ParticleSparks.as";
 
 const u16 duration = 60 * 30;
+const f32 radius = 128.0f;
 
 void onInit(CBlob@ this)
 {
@@ -29,7 +30,7 @@ void onTick(CSprite@ this)
 	if (!blob.hasTag("extinguished"))
 	{
 		blob.SetLight(true);
-		blob.SetLightRadius((96.0f+XORRandom(16)) * (Maths::Max(0,timer)/(getGameTime()+duration))+16.0f);
+		blob.SetLightRadius((radius+XORRandom(16)) * (Maths::Max(0,timer)/(getGameTime()+duration))+16.0f);
 		blob.SetLightColor(SColor(255, 200+XORRandom(55), 25, 25));
 	}
 	else blob.SetLight(false);
@@ -50,7 +51,6 @@ void onTick(CSprite@ this)
 
 void onTick(CBlob@ this)
 {
-	if (!isServer()) return;
 	if (!this.hasTag("activated") || this.hasTag("extinguished")) return;
 
 	s32 timer = this.get_s32("timer") - getGameTime();
