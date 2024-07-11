@@ -254,16 +254,16 @@ void onTick(CMovement@ this)
 		const f32 y_ts = ts * 0.2f;
 		const f32 x_ts = ts * 1.4f;
 
-		bool surface_left = isSolid(map,pos + Vec2f(-x_ts, y_ts - map.tilesize)) ||
-		                    isSolid(map,pos + Vec2f(-x_ts, y_ts));
+		bool surface_left = isHardSolid(map,pos + Vec2f(-x_ts, y_ts - map.tilesize)) ||
+		                    isHardSolid(map,pos + Vec2f(-x_ts, y_ts));
 		if (!surface_left)
 		{
 			surface_left = checkForSolidMapBlob(map, pos + Vec2f(-x_ts, y_ts - map.tilesize), blob) ||
 			               checkForSolidMapBlob(map, pos + Vec2f(-x_ts, y_ts), blob);
 		}
 
-		bool surface_right = isSolid(map,pos + Vec2f(x_ts, y_ts - map.tilesize)) ||
-		                     isSolid(map,pos + Vec2f(x_ts, y_ts));
+		bool surface_right = isHardSolid(map,pos + Vec2f(x_ts, y_ts - map.tilesize)) ||
+		                     isHardSolid(map,pos + Vec2f(x_ts, y_ts));
 		if (!surface_right)
 		{
 			surface_right = checkForSolidMapBlob(map, pos + Vec2f(x_ts, y_ts - map.tilesize), blob) ||
@@ -271,8 +271,8 @@ void onTick(CMovement@ this)
 		}
 
 		//not checking blobs for this - perf
-		bool surface_above = isSolid(map,pos + Vec2f(y_ts, -x_ts)) || isSolid(map,pos + Vec2f(-y_ts, -x_ts));
-		bool surface_below = isSolid(map,pos + Vec2f(y_ts, x_ts)) || isSolid(map,pos + Vec2f(-y_ts, x_ts));
+		bool surface_above = isHardSolid(map,pos + Vec2f(y_ts, -x_ts)) || isHardSolid(map,pos + Vec2f(-y_ts, -x_ts));
+		bool surface_below = isHardSolid(map,pos + Vec2f(y_ts, x_ts)) || isHardSolid(map,pos + Vec2f(-y_ts, x_ts));
 
 		bool surface = surface_left || surface_right;
 
@@ -795,9 +795,9 @@ bool canVault(CBlob@ blob, CMap@ map, f32 movingside)
 	// ice is not solid, do not climb it
 
 	f32 tilesize = map.tilesize;
-	if (!isSolid(map,Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight))) &&
-	        !isSolid(map,Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight + 1))) &&
-	        isSolid(map,Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight + 2))))
+	if (!isHardSolid(map,Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight))) &&
+	        !isHardSolid(map,Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight + 1))) &&
+	        isHardSolid(map,Vec2f(pos.x + movingside * tilesize, pos.y + tilesize * (offsetheight + 2))))
 	{
 
 		bool hasRayFace = map.rayCastSolid(pos + Vec2f(0, -6), pos + Vec2f(movingside * 12, -6));
@@ -885,7 +885,7 @@ void HandleStuckAtTop(CBlob@ this)
 		CMap@ map = getMap();
 		float y = 2.5f * map.tilesize;
 		//solid underneath
-		if (isSolid(map,Vec2f(pos.x, y)))
+		if (isHardSolid(map,Vec2f(pos.x, y)))
 		{
 			//"stuck"; check left and right
 			int rad = 10;
@@ -896,7 +896,7 @@ void HandleStuckAtTop(CBlob@ this)
 				for (int dir = -1; dir <= 1 && !found; dir += 2)
 				{
 					tx = pos.x + (dir * i) * map.tilesize;
-					if (!isSolid(map,Vec2f(tx, y)))
+					if (!isHardSolid(map,Vec2f(tx, y)))
 					{
 						found = true;
 					}
