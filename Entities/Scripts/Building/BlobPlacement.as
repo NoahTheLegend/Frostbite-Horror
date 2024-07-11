@@ -27,7 +27,7 @@ bool PlaceBlob(CBlob@ this, CBlob @blob, Vec2f cursorPos, bool repairing = false
 		{
 			blob.SetDamageOwnerPlayer(this.getPlayer());
 		}
-
+		
 		if (this.server_DetachFrom(blob))
 		{
 			if (repairing && repairBlob !is null)
@@ -71,7 +71,7 @@ bool serverBlobCheck(CBlob@ blob, CBlob@ blobToPlace, Vec2f cursorPos, bool repa
 	CMap@ map = getMap();
 	Tile backtile = map.getTile(cursorPos);
 
-	if (map.isTileBedrock(backtile.type) || isSolid(map,backtile.type))
+	if (isSolid(map,backtile.type))
 		return false;
 
 	// Make sure we actually have support at our cursor pos
@@ -502,6 +502,13 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 {
 	if (cmd == this.getCommandID("rotateBlob"))
 	{
+		CBlob@ blob = this.getCarriedBlob();
+		if (blob !is null && blob.hasTag("can place") && this.getControls() !is null)
+		{
+			s8 rotateDir = this.getControls().ActionKeyPressed(AK_BUILD_MODIFIER) ? -1 : 1;
+			blob.setAngleDegrees(blob.getAngleDegrees() + 90 * rotateDir);
+		}
+
 		this.set_u16("build_angle", params.read_u16());
 		return;
 	}
@@ -534,7 +541,7 @@ void onCommand(CBlob@ this, u8 cmd, CBitStream @params)
 		if (carryBlob !is null)
 		{
 			// the getHealth() is here because apparently a blob isn't null for a tick (?) after being destroyed
-			bool repairing = (repairBlob !is null && repairBlob.getHealth() > 0);
+			bool repairing = (repairBlob !is null && repairBlob.getHealth() > 0 && !repairBlob.hasTag("cant repair"));
 
 			if (repairing) // is there a blobtile here?
 			{

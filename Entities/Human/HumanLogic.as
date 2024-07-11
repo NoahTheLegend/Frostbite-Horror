@@ -63,7 +63,7 @@ void onTick(CBlob@ this)
 		if (this.isKeyJustPressed(key_action3))
 		{
 			CBlob@ carried = this.getCarriedBlob();
-			if (carried is null || !carried.hasTag("temp blob"))
+			if (carried is null || (!carried.hasTag("temp blob") && !carried.hasTag("can place")))
 			{
 				client_SendThrowOrActivateCommand(this);
 			}
