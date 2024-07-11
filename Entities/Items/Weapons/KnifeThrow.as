@@ -16,13 +16,13 @@ void onTick(CBlob@ this)
 	CShape@ shape = this.getShape();
 	ShapeConsts@ consts = shape.getConsts();
     consts.mapCollisions = false;
-    consts.bullet = false;
-	consts.net_threshold_multiplier = 4.0f;
+    consts.bullet = true;
+	consts.net_threshold_multiplier = 0.5f;
 
 	f32 angle;
 	bool processSticking = true;
 
-	if (!this.hasTag("collided"))
+	//if (!this.hasTag("collided")) // falls through ground sometimes, kag
 	{
 		angle = shape.vellen < 0.5f ? this.get_f32("old_rot") : (this.getOldPosition()-this.getPosition()).Angle();
         this.set_f32("old_rot", angle);
@@ -128,6 +128,15 @@ void DoHitMap(CBlob@ this, Vec2f worldPoint, Vec2f velocity, f32 damage, u8 cust
 void onAttach(CBlob@ this, CBlob@ attached, AttachmentPoint@ ap)
 {
 	this.Tag("removescript");
+}
+
+void onDetach(CBlob@ this, CBlob@ detached, AttachmentPoint@ ap)
+{
+	CShape@ shape = this.getShape();
+	shape.getConsts().mapCollisions = true;
+
+	if (shape.isOverlappingTileSolid(true))
+		this.setAngleDegrees(0);
 }
 
 void RemoveScript(CBlob@ this)
