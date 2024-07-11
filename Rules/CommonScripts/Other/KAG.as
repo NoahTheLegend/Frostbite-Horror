@@ -3,12 +3,14 @@
 #include "PrecacheTextures.as"
 #include "EmotesCommon.as"
 #include "CustomBlocks.as"
+#include "GameplayEvents.as"
 
 void onInit(CRules@ this)
 {
 	getNet().legacy_cmd = true;
 	LoadDefaultMapLoaders();
 	LoadDefaultGUI();
+	SetupGameplayEvents(this);
 
 	if (isServer())
 	{

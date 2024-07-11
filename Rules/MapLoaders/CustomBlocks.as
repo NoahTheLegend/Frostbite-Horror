@@ -220,13 +220,29 @@ bool isSolid(u32 type)
 bool isSolid(CMap@ map, u32 type) // thin ice is not solid
 {
 	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedStone(type) || isTileCaution(type)
-		|| isTileSnow(type) || isTileThickIce(type) || isTileElderBrick(type) || isTileSnowBricks(type);
+		|| isTileSnow(type) || isTileAnyIce(type) || isTileElderBrick(type) || isTileSnowBricks(type);
 }
 
 bool isSolid(CMap@ map, Vec2f pos)
 {
 	u32 type = map.getTile(pos).type;
 	return isSolid(map, type);
+}
+
+bool isHardSolid(CMap@ map, u32 type) // only tiles with friction
+{
+	return map.isTileSolid(type) || map.isTileGround(type) || isTileSteel(type) || isTilePolishedStone(type) || isTileCaution(type) || isTileElderBrick(type) || isTileSnowBricks(type);
+}
+
+bool isHardSolid(CMap@ map, Vec2f pos) // thin ice is not solid
+{
+	u32 type = map.getTile(pos).type;
+	return isHardSolid(map, type);
+}
+
+bool isHardSolid(u32 type)
+{
+	return isHardSolid(getMap(), type);
 }
 
 bool isTileExposure(u32 index) // for RoomDetector.as
@@ -244,7 +260,10 @@ bool isTileBackSteel(u32 index)
 {return index >= CMap::tile_bsteel && index <= CMap::tile_bsteel_d4;}
 
 bool isTileSnow(TileType tile)
-{return tile >= CMap::tile_snow && tile <= CMap::tile_snow_d3;}
+{return (tile >= CMap::tile_snow && tile <= CMap::tile_snow_d3) || isTileGround(tile);}
+
+bool isTileGround(TileType tile)
+{{return getMap().isTileGround(tile);}}
 
 bool isTileSnowPile(TileType tile)
 {return tile >= CMap::tile_snow_pile && tile <= CMap::tile_snow_pile_v5;}
